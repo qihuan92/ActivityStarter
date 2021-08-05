@@ -1,6 +1,9 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
 }
+
+def compilerVersionName = "1.0.0"
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -10,4 +13,32 @@ java {
 dependencies {
     implementation project(path: ':annotation')
     implementation 'com.squareup:javapoet:1.13.0'
+}
+
+task sourceJar(type: Jar, dependsOn: classes) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.allSource
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/qihuan92/ActivityStarter"
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_PUBLISH_TOKEN")
+            }
+        }
+    }
+
+    publications {
+        release(MavenPublication) {
+            groupId "com.qihuan.activitystarter"
+            artifactId "activitystarter-compiler"
+            version compilerVersionName
+
+            artifact(sourceJar)
+        }
+    }
 }
