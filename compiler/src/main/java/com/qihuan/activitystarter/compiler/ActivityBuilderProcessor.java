@@ -248,6 +248,10 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .addParameter(PrebuiltTypes.CONTEXT.java(), "context")
                 .addStatement("$T intent = getIntent(context)", PrebuiltTypes.INTENT.java());
 
+        builder.beginControlFlow("if(!(context instanceof Activity))");
+        builder.addStatement("intent.addFlags($T.FLAG_ACTIVITY_NEW_TASK)", PrebuiltTypes.INTENT.java());
+        builder.endControlFlow();
+
         if (withOptions) {
             builder.addParameter(PrebuiltTypes.BUNDLE.java(), "options");
             builder.addStatement("context.startActivity(intent, options)");
