@@ -236,20 +236,42 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     }
 
     private void buildStartMethod(TypeSpec.Builder builder) {
-        MethodSpec.Builder startMethodBuilder = MethodSpec.methodBuilder("start")
+        builder.addMethod(startMethodBuilder(false).build());
+        builder.addMethod(startMethodBuilder(true).build());
+        builder.addMethod(startForResultMethodBuilder(false).build());
+        builder.addMethod(startForResultMethodBuilder(true).build());
+    }
+
+    private MethodSpec.Builder startMethodBuilder(boolean withOptions) {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("start")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(PrebuiltTypes.CONTEXT.java(), "context")
-                .addStatement("$T intent = getIntent(context)", PrebuiltTypes.INTENT.java())
-                .addStatement("context.startActivity(intent)");
-        builder.addMethod(startMethodBuilder.build());
+                .addStatement("$T intent = getIntent(context)", PrebuiltTypes.INTENT.java());
 
-        MethodSpec.Builder startForResultMethodBuilder = MethodSpec.methodBuilder("start")
+        if (withOptions) {
+            builder.addParameter(PrebuiltTypes.BUNDLE.java(), "options");
+            builder.addStatement("context.startActivity(intent, options)");
+        } else {
+            builder.addStatement("context.startActivity(intent)");
+        }
+        return builder;
+    }
+
+    private MethodSpec.Builder startForResultMethodBuilder(boolean withOptions) {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("start")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(PrebuiltTypes.ACTIVITY.java(), "activity")
                 .addParameter(TypeName.INT, "requestCode")
-                .addStatement("$T intent = getIntent(activity)", PrebuiltTypes.INTENT.java())
-                .addStatement("activity.startActivityForResult(intent, requestCode)");
-        builder.addMethod(startForResultMethodBuilder.build());
+                .addStatement("$T intent = getIntent(activity)", PrebuiltTypes.INTENT.java());
+
+        if (withOptions) {
+            builder.addParameter(PrebuiltTypes.BUNDLE.java(), "options");
+            builder.addStatement("activity.startActivityForResult(intent, requestCode, options)");
+        } else {
+            builder.addStatement("activity.startActivityForResult(intent, requestCode)");
+        }
+
+        return builder;
     }
 
     private void writeJavaToFile(ActivityClass activityClass, TypeSpec typeSpec) {
