@@ -105,6 +105,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         buildIntentMethod(activityClass, builder);
         buildInjectMethod(activityClass, builder);
         buildSaveStateMethod(activityClass, builder);
+        buildNewIntentMethod(activityClass, builder);
         buildStartMethod(builder);
     }
 
@@ -233,6 +234,34 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
 
         saveStateMethodBuilder.addStatement("outState.putAll(intent.getExtras())").endControlFlow();
         builder.addMethod(saveStateMethodBuilder.build());
+    }
+
+    private void buildNewIntentMethod(ActivityClass activityClass, TypeSpec.Builder builder) {
+        MethodSpec.Builder newIntentMethodBuilder = MethodSpec.methodBuilder("processNewIntent")
+                .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
+                .returns(TypeName.VOID)
+                .addParameter(TypeName.get(activityClass.getTypeElement().asType()), "activity")
+                .addParameter(PrebuiltTypes.INTENT.java(), "intent");
+        newIntentMethodBuilder.addStatement("processNewIntent(activity, intent, true)");
+
+        builder.addMethod(newIntentMethodBuilder.build());
+
+        MethodSpec.Builder newIntentWithUpdateMethodBuilder = MethodSpec.methodBuilder("processNewIntent")
+                .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
+                .returns(TypeName.VOID)
+                .addParameter(TypeName.get(activityClass.getTypeElement().asType()), "activity")
+                .addParameter(PrebuiltTypes.INTENT.java(), "intent")
+                .addParameter(Boolean.class, "updateIntent");
+
+        newIntentWithUpdateMethodBuilder.beginControlFlow("if(updateIntent)")
+                .addStatement("activity.setIntent(intent)")
+                .endControlFlow();
+
+        newIntentWithUpdateMethodBuilder.beginControlFlow("if(intent != null)")
+                .addStatement("inject(activity, intent.getExtras())")
+                .endControlFlow();
+
+        builder.addMethod(newIntentWithUpdateMethodBuilder.build());
     }
 
     private void buildStartMethod(TypeSpec.Builder builder) {
