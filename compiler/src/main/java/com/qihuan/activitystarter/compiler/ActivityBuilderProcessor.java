@@ -258,7 +258,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     }
 
     private MethodSpec.Builder startForResultMethodBuilder(boolean withOptions) {
-        MethodSpec.Builder builder = MethodSpec.methodBuilder("start")
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("startForResult")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(PrebuiltTypes.ACTIVITY.java(), "activity")
                 .addParameter(TypeName.INT, "requestCode")
