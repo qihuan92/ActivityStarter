@@ -1,5 +1,6 @@
 package com.qihuan.activitystarter;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -50,6 +51,12 @@ public class DetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_detail);
 
         initView();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        DetailActivityBuilder.processNewIntent(this, intent);
     }
 
     private void initView() {
