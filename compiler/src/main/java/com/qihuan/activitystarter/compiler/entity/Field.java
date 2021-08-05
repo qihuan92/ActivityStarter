@@ -1,6 +1,6 @@
 package com.qihuan.activitystarter.compiler.entity;
 
-import com.qihuan.activitystarter.annotation.Arg;
+import com.qihuan.activitystarter.annotation.Extra;
 import com.qihuan.activitystarter.compiler.utils.StringUtils;
 import com.qihuan.activitystarter.compiler.utils.TypeUtils;
 import com.squareup.javapoet.ClassName;
@@ -28,48 +28,48 @@ public class Field implements Comparable<Field> {
     public Field(Symbol.VarSymbol symbol) {
         this.symbol = symbol;
 
-        Arg argAnnotation = symbol.getAnnotation(Arg.class);
-        String name = argAnnotation.value();
+        Extra extraAnnotation = symbol.getAnnotation(Extra.class);
+        String name = extraAnnotation.value();
 
-        this.required = argAnnotation.required();
+        this.required = extraAnnotation.required();
         if (!name.isEmpty()) {
             this.name = name;
         } else {
             this.name = symbol.getQualifiedName().toString();
         }
-        setDefaultValue(argAnnotation, symbol);
+        setDefaultValue(extraAnnotation, symbol);
     }
 
-    private void setDefaultValue(Arg argAnnotation, Symbol.VarSymbol symbol) {
+    private void setDefaultValue(Extra extraAnnotation, Symbol.VarSymbol symbol) {
         TypeKind kind = symbol.type.getKind();
         switch (kind) {
             case CHAR:
-                this.defaultValue = String.format("'%c'", argAnnotation.charValue());
+                this.defaultValue = String.format("'%c'", extraAnnotation.charValue());
                 break;
             case BYTE:
-                this.defaultValue = String.format(Locale.getDefault(), "(byte) %d", argAnnotation.byteValue());
+                this.defaultValue = String.format(Locale.getDefault(), "(byte) %d", extraAnnotation.byteValue());
                 break;
             case SHORT:
-                this.defaultValue = String.format(Locale.getDefault(), "(short) %d", argAnnotation.shortValue());
+                this.defaultValue = String.format(Locale.getDefault(), "(short) %d", extraAnnotation.shortValue());
                 break;
             case INT:
-                this.defaultValue = argAnnotation.intValue();
+                this.defaultValue = extraAnnotation.intValue();
                 break;
             case LONG:
-                this.defaultValue = String.format(Locale.getDefault(), "%dL", argAnnotation.longValue());
+                this.defaultValue = String.format(Locale.getDefault(), "%dL", extraAnnotation.longValue());
                 break;
             case FLOAT:
-                this.defaultValue = String.format(Locale.getDefault(), "%ff", argAnnotation.floatValue());
+                this.defaultValue = String.format(Locale.getDefault(), "%ff", extraAnnotation.floatValue());
                 break;
             case DOUBLE:
-                this.defaultValue = argAnnotation.doubleValue();
+                this.defaultValue = extraAnnotation.doubleValue();
                 break;
             case BOOLEAN:
-                this.defaultValue = argAnnotation.booleanValue();
+                this.defaultValue = extraAnnotation.booleanValue();
                 break;
             default:
                 if (TypeUtils.isSameType(symbol.type, String.class)) {
-                    this.defaultValue = String.format("\"%s\"", argAnnotation.stringValue());
+                    this.defaultValue = String.format("\"%s\"", extraAnnotation.stringValue());
                 }
                 break;
         }

@@ -6,7 +6,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.qihuan.activitystarter.annotation.Arg;
+import com.qihuan.activitystarter.annotation.Extra;
 import com.qihuan.activitystarter.annotation.Builder;
 
 import java.util.Locale;
@@ -14,31 +14,31 @@ import java.util.Locale;
 @Builder
 public class DetailActivity extends AppCompatActivity {
 
-    @Arg
+    @Extra
     Long id;
 
-    @Arg(required = false)
+    @Extra(required = false)
     String title;
 
-    @Arg(required = false)
+    @Extra(required = false)
     char charVal;
 
-    @Arg(required = false)
+    @Extra(required = false)
     byte byteVal;
 
-    @Arg(required = false)
+    @Extra(required = false)
     short shortVal;
 
-    @Arg(required = false)
+    @Extra(required = false)
     int intVal;
 
-    @Arg(required = false)
+    @Extra(required = false)
     float floatVal;
 
-    @Arg(required = false)
+    @Extra(required = false)
     double doubleVal;
 
-    @Arg(required = false)
+    @Extra(required = false)
     boolean booleanVal;
 
     private Toolbar toolbar;

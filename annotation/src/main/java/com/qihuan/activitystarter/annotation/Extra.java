@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.CLASS)
-public @interface Arg {
+public @interface Extra {
     String value() default "";
 
     boolean required() default true;

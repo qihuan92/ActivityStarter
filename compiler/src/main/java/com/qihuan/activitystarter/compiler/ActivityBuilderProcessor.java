@@ -1,6 +1,6 @@
 package com.qihuan.activitystarter.compiler;
 
-import com.qihuan.activitystarter.annotation.Arg;
+import com.qihuan.activitystarter.annotation.Extra;
 import com.qihuan.activitystarter.annotation.Builder;
 import com.qihuan.activitystarter.compiler.entity.ActivityClass;
 import com.qihuan.activitystarter.compiler.entity.Field;
@@ -50,7 +50,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     public Set<String> getSupportedAnnotationTypes() {
         Set<String> types = new LinkedHashSet<>();
         types.add(Builder.class.getCanonicalName());
-        types.add(Arg.class.getCanonicalName());
+        types.add(Extra.class.getCanonicalName());
         return types;
     }
 
@@ -74,7 +74,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     }
 
     private void parseFields(RoundEnvironment roundEnv) {
-        roundEnv.getElementsAnnotatedWith(Arg.class)
+        roundEnv.getElementsAnnotatedWith(Extra.class)
                 .stream()
                 .filter(element -> element.getKind().isField())
                 .forEach(element -> {
