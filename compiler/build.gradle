@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'signing'
 }
 
 def compilerVersionName = "1.0.0"
@@ -15,7 +16,7 @@ dependencies {
     implementation 'com.squareup:javapoet:1.13.0'
 }
 
-task sourceJar(type: Jar, dependsOn: classes) {
+task sourcesJar(type: Jar) {
     archiveClassifier.set('sources')
     from sourceSets.main.allSource
 }
@@ -23,11 +24,20 @@ task sourceJar(type: Jar, dependsOn: classes) {
 publishing {
     repositories {
         maven {
+            name = "OSSRH"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = project.ossrhMavenUser
+                password = project.ossrhMavenPassword
+            }
+        }
+
+        maven {
             name = "GitHubPackages"
             url = "https://maven.pkg.github.com/qihuan92/ActivityStarter"
             credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_PUBLISH_TOKEN")
+                username = project.githubMavenUser
+                password = project.githubMavenToken
             }
         }
     }
@@ -38,7 +48,41 @@ publishing {
             artifactId "activitystarter-compiler"
             version compilerVersionName
 
-            artifact(sourceJar)
+            artifact(sourcesJar)
+
+            pom {
+                name = "activitystarter-compiler"
+                description = 'ActivityStarter'
+                url = 'https://github.com/qihuan92/ActivityStarter'
+                licenses {
+                    license {
+                        name = 'ActivityStarter License'
+                        url = 'https://github.com/qihuan92/ActivityStarter/blob/master/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'qihuan'
+                        name = 'qihuan'
+                        email = 'qihuan92@126.com'
+                    }
+                }
+
+                scm {
+                    connection = 'scm:git:github.com/qihuan92/ActivityStarter.git'
+                    developerConnection = 'scm:git:ssh://github.com/qihuan92/ActivityStarter.git'
+                    url = 'https://github.com/qihuan92/ActivityStarter/tree/master'
+                }
+            }
         }
     }
+}
+
+signing {
+    useInMemoryPgpKeys(
+            project.signingKeyId,
+            project.signingKey,
+            project.signingPassword,
+    )
+    sign publishing.publications
 }

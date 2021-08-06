@@ -15,3 +15,18 @@ buildscript {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+def props = new Properties()
+file("local.properties").withInputStream { props.load(it) }
+
+ext {
+    githubMavenUser = props.getProperty('github.maven.user')
+    githubMavenToken = props.getProperty('github.maven.token')
+
+    ossrhMavenUser = props.getProperty('ossrh.maven.user')
+    ossrhMavenPassword = props.getProperty('ossrh.maven.password')
+
+    signingKeyId = props.getProperty('signing.keyId')
+    signingPassword = props.getProperty('signing.password')
+    signingKey = props.getProperty('signing.key')
+}
