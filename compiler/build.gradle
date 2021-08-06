@@ -34,7 +34,7 @@ publishing {
 
     publications {
         release(MavenPublication) {
-            groupId "com.qihuan.activitystarter"
+            groupId "io.github.qihuan92.activitystarter"
             artifactId "activitystarter-compiler"
             version compilerVersionName
 
