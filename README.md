@@ -84,6 +84,10 @@ Activity 启动器，解决使用 `startActivity()` 传递多个参数使用繁�
    }
    ```
 
+## 许可
+
+> [Apache License 2.0](https://github.com/qihuan92/ActivityStarter/blob/master/LICENSE)
+
 ## 致谢
 
 - 感谢 [@bennyhuo](https://github.com/bennyhuo) 老师，此项目为学习之后的练习项目
