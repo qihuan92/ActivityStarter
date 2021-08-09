@@ -1,7 +1,5 @@
 package io.github.qihuan92.activitystarter.compiler.entity;
 
-import io.github.qihuan92.activitystarter.compiler.utils.ElementUtils;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -13,8 +11,10 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
+import io.github.qihuan92.activitystarter.compiler.utils.ElementUtils;
+
 /**
- * BuilderInfo
+ * ActivityClass
  *
  * @author qi
  * @since 2021/8/3

@@ -1,9 +1,5 @@
 package io.github.qihuan92.activitystarter.compiler.entity;
 
-import io.github.qihuan92.activitystarter.annotation.Extra;
-import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
-import io.github.qihuan92.activitystarter.compiler.utils.StringUtils;
-
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 import com.sun.tools.javac.code.Symbol;
@@ -12,8 +8,12 @@ import java.util.Locale;
 
 import javax.lang.model.type.TypeKind;
 
+import io.github.qihuan92.activitystarter.annotation.Extra;
+import io.github.qihuan92.activitystarter.compiler.utils.StringUtils;
+import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
+
 /**
- * ArgInfo
+ * Field
  *
  * @author qi
  * @since 2021/8/3
