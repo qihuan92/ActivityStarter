@@ -1,7 +1,5 @@
 plugins {
     id 'java-library'
-    id 'maven-publish'
-    id 'signing'
 }
 
 java {
@@ -9,48 +7,7 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
-task sourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from sourceSets.main.allSource
+ext {
+    artifactId = 'activitystarter-annotation'
 }
-
-publishing {
-    repositories {
-        maven {
-            name = "OSSRH"
-            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                username = project.ossrhMavenUser
-                password = project.ossrhMavenPassword
-            }
-        }
-
-        maven {
-            name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/qihuan92/ActivityStarter"
-            credentials {
-                username = project.githubMavenUser
-                password = project.githubMavenToken
-            }
-        }
-    }
-
-    publications {
-        release(MavenPublication) {
-            groupId project.publishGroupId
-            artifactId "activitystarter-annotation"
-            version project.activityStarterVersionName
-
-            artifact(sourcesJar)
-        }
-    }
-}
-
-signing {
-    useInMemoryPgpKeys(
-            project.signingKeyId,
-            project.signingKey,
-            project.signingPassword,
-    )
-    sign publishing.publications
-}
+apply from: '../publish.gradle'

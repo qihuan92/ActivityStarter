@@ -1,0 +1,83 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+def isAndroidProject = project.hasProperty('android')
+
+if (!isAndroidProject) {
+    task sourcesJar(type: Jar) {
+        archiveClassifier.set('sources')
+        from sourceSets.main.allSource
+    }
+}
+
+afterEvaluate {
+    publishing {
+        repositories {
+            maven {
+                name = "OSSRH"
+                url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                credentials {
+                    username = project.ossrhMavenUser
+                    password = project.ossrhMavenPassword
+                }
+            }
+
+            maven {
+                name = "GitHubPackages"
+                url = "https://maven.pkg.github.com/qihuan92/ActivityStarter"
+                credentials {
+                    username = project.githubMavenUser
+                    password = project.githubMavenToken
+                }
+            }
+        }
+
+        publications {
+            release(MavenPublication) {
+                if (isAndroidProject) {
+                    from components.release
+                } else {
+                    artifact(sourcesJar)
+                }
+
+                groupId project.publishGroupId
+                artifactId project.artifactId
+                version project.activityStarterVersionName
+
+                pom {
+                    name = project.artifactId
+                    description = 'ActivityStarter'
+                    url = 'https://github.com/qihuan92/ActivityStarter'
+                    licenses {
+                        license {
+                            name = 'ActivityStarter License'
+                            url = 'https://github.com/qihuan92/ActivityStarter/blob/master/LICENSE'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'qihuan'
+                            name = 'qihuan'
+                            email = 'qihuan92@126.com'
+                        }
+                    }
+
+                    scm {
+                        connection = 'scm:git:github.com/qihuan92/ActivityStarter.git'
+                        developerConnection = 'scm:git:ssh://github.com/qihuan92/ActivityStarter.git'
+                        url = 'https://github.com/qihuan92/ActivityStarter/tree/master'
+                    }
+                }
+            }
+        }
+    }
+}
+
+signing {
+    useInMemoryPgpKeys(
+            project.signingKeyId,
+            project.signingKey,
+            project.signingPassword,
+    )
+    sign publishing.publications
+}

@@ -1,7 +1,5 @@
 plugins {
     id 'java-library'
-    id 'maven-publish'
-    id 'signing'
 }
 
 java {
@@ -14,73 +12,7 @@ dependencies {
     implementation 'com.squareup:javapoet:1.13.0'
 }
 
-task sourcesJar(type: Jar) {
-    archiveClassifier.set('sources')
-    from sourceSets.main.allSource
+ext {
+    artifactId = 'activitystarter-compiler'
 }
-
-publishing {
-    repositories {
-        maven {
-            name = "OSSRH"
-            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-            credentials {
-                username = project.ossrhMavenUser
-                password = project.ossrhMavenPassword
-            }
-        }
-
-        maven {
-            name = "GitHubPackages"
-            url = "https://maven.pkg.github.com/qihuan92/ActivityStarter"
-            credentials {
-                username = project.githubMavenUser
-                password = project.githubMavenToken
-            }
-        }
-    }
-
-    publications {
-        release(MavenPublication) {
-            groupId project.publishGroupId
-            artifactId "activitystarter-compiler"
-            version project.activityStarterVersionName
-
-            artifact(sourcesJar)
-
-            pom {
-                name = "activitystarter-compiler"
-                description = 'ActivityStarter'
-                url = 'https://github.com/qihuan92/ActivityStarter'
-                licenses {
-                    license {
-                        name = 'ActivityStarter License'
-                        url = 'https://github.com/qihuan92/ActivityStarter/blob/master/LICENSE'
-                    }
-                }
-                developers {
-                    developer {
-                        id = 'qihuan'
-                        name = 'qihuan'
-                        email = 'qihuan92@126.com'
-                    }
-                }
-
-                scm {
-                    connection = 'scm:git:github.com/qihuan92/ActivityStarter.git'
-                    developerConnection = 'scm:git:ssh://github.com/qihuan92/ActivityStarter.git'
-                    url = 'https://github.com/qihuan92/ActivityStarter/tree/master'
-                }
-            }
-        }
-    }
-}
-
-signing {
-    useInMemoryPgpKeys(
-            project.signingKeyId,
-            project.signingKey,
-            project.signingPassword,
-    )
-    sign publishing.publications
-}
+apply from: '../publish.gradle'
