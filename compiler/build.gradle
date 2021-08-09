@@ -4,8 +4,6 @@ plugins {
     id 'signing'
 }
 
-def compilerVersionName = "1.0.0"
-
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -44,9 +42,9 @@ publishing {
 
     publications {
         release(MavenPublication) {
-            groupId "io.github.qihuan92.activitystarter"
+            groupId project.publishGroupId
             artifactId "activitystarter-compiler"
-            version compilerVersionName
+            version project.activityStarterVersionName
 
             artifact(sourcesJar)
 

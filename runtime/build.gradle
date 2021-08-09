@@ -4,17 +4,14 @@ plugins {
     id 'signing'
 }
 
-def runtimeVersionCode = 1
-def runtimeVersionName = "1.0.0"
-
 android {
     compileSdk 31
 
     defaultConfig {
         minSdk 21
         targetSdk 31
-        versionCode runtimeVersionCode
-        versionName runtimeVersionName
+        versionCode project.activityStarterVersionCode
+        versionName project.activityStarterVersionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -65,34 +62,9 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
 
-                groupId "io.github.qihuan92.activitystarter"
+                groupId project.publishGroupId
                 artifactId "activitystarter-runtime"
-                version runtimeVersionName
-
-                pom {
-                    name = "activitystarter-runtime"
-                    description = 'ActivityStarter'
-                    url = 'https://github.com/qihuan92/ActivityStarter'
-                    licenses {
-                        license {
-                            name = 'ActivityStarter License'
-                            url = 'https://github.com/qihuan92/ActivityStarter/blob/master/LICENSE'
-                        }
-                    }
-                    developers {
-                        developer {
-                            id = 'qihuan'
-                            name = 'qihuan'
-                            email = 'qihuan92@126.com'
-                        }
-                    }
-
-                    scm {
-                        connection = 'scm:git:github.com/qihuan92/ActivityStarter.git'
-                        developerConnection = 'scm:git:ssh://github.com/qihuan92/ActivityStarter.git'
-                        url = 'https://github.com/qihuan92/ActivityStarter/tree/master'
-                    }
-                }
+                version project.activityStarterVersionName
             }
         }
     }
