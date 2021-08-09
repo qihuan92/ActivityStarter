@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+./gradlew annotation:clean annotation:assemble annotation:generatePomFileForReleasePublication annotation:publishReleasePublicationToOSSRHRepository
+./gradlew compiler:clean compiler:assemble compiler:generatePomFileForReleasePublication compiler:publishReleasePublicationToOSSRHRepository
+./gradlew runtime:clean runtime:assembleRelease runtime:generatePomFileForReleasePublication runtime:publishReleasePublicationToOSSRHRepository
