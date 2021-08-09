@@ -26,6 +26,7 @@ import javax.lang.model.element.TypeElement;
 
 import io.github.qihuan92.activitystarter.annotation.Builder;
 import io.github.qihuan92.activitystarter.annotation.Extra;
+import io.github.qihuan92.activitystarter.annotation.Generated;
 import io.github.qihuan92.activitystarter.compiler.entity.ActivityClass;
 import io.github.qihuan92.activitystarter.compiler.entity.Field;
 import io.github.qihuan92.activitystarter.compiler.utils.AptContext;
@@ -95,6 +96,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
             return;
         }
         TypeSpec.Builder typeBuilder = TypeSpec.classBuilder(activityClass.getBuilderClassName())
+                .addAnnotation(Generated.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
         buildClass(activityClass, typeBuilder);
         writeJavaToFile(activityClass, typeBuilder.build());

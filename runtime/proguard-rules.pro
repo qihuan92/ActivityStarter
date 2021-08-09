@@ -19,3 +19,9 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+-keep class io.github.qihuan92.activitystarter.annotation.*
+
+-keepnames @io.github.qihuan92.activitystarter.annotation.Builder public class *
+-keepnames @io.github.qihuan92.activitystarter.annotation.Generated public class ** { *; }
+-keep @io.github.qihuan92.activitystarter.annotation.Generated public class ** {  *; }
