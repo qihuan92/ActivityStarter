@@ -15,4 +15,4 @@ dependencies {
 ext {
     artifactId = 'activitystarter-compiler'
 }
-apply from: '../publish.gradle'
+apply from: rootProject.file('publish.gradle')
