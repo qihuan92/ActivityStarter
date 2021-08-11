@@ -21,8 +21,8 @@ file("local.properties").withInputStream { props.load(it) }
 
 ext {
     publishGroupId = "io.github.qihuan92.activitystarter"
-    activityStarterVersionCode = 3
-    activityStarterVersionName = "1.0.2"
+    activityStarterVersionCode = 4
+    activityStarterVersionName = "1.0.3"
 
     githubMavenUser = props.getProperty('github.maven.user')
     githubMavenToken = props.getProperty('github.maven.token')
