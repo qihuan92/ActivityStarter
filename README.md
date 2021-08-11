@@ -2,6 +2,13 @@
 
 Activity 启动器，解决使用 `startActivity()` 传递多个参数使用繁琐问题。
 
+## 接入
+
+```groovy
+implementation "io.github.qihuan92.activitystarter:activitystarter-runtime:$latest_version"
+annotationProcessor "io.github.qihuan92.activitystarter:activitystarter-compiler:$latest_version"
+```
+
 ## 使用
 
 1. 在自定义的 `Application` 的 `onCreate()` 中调用 `ActivityStarter.init(this)`，示例：
