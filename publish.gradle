@@ -1,6 +1,17 @@
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
+def isAndroidProject = project.hasProperty('android')
+
+task sourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    if (isAndroidProject) {
+        from android.sourceSets.main.java.srcDirs
+    } else {
+        from sourceSets.main.allSource
+    }
+}
+
 afterEvaluate {
     publishing {
         repositories {
@@ -25,11 +36,12 @@ afterEvaluate {
 
         publications {
             release(MavenPublication) {
-                if (project.hasProperty('android')) {
+                if (isAndroidProject) {
                     from components.release
                 } else {
                     from components.java
                 }
+                artifact(sourcesJar)
 
                 groupId project.publishGroupId
                 artifactId project.artifactId
