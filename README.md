@@ -1,5 +1,7 @@
 # ActivityStarter
 
+![GitHub](https://img.shields.io/github/license/qihuan92/ActivityStarter) ![Maven Central](https://img.shields.io/maven-central/v/io.github.qihuan92.activitystarter/activitystarter-runtime)
+
 Activity 启动器，解决使用 `startActivity()` 传递多个参数使用繁琐问题。
 
 ## 接入
