@@ -3,6 +3,7 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="1.8">
       <module name="ActivityStarter.app" target="11" />
+      <module name="ActivityStarter.compiler" target="11" />
       <module name="ActivityStarter.runtime" target="11" />
     </bytecodeTargetLevel>
   </component>

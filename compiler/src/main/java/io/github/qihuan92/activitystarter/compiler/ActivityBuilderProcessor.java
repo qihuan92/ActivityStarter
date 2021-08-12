@@ -7,7 +7,6 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import com.sun.tools.javac.code.Symbol;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -23,6 +22,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 
 import io.github.qihuan92.activitystarter.annotation.Builder;
 import io.github.qihuan92.activitystarter.annotation.Extra;
@@ -31,7 +31,6 @@ import io.github.qihuan92.activitystarter.compiler.entity.ActivityClass;
 import io.github.qihuan92.activitystarter.compiler.entity.Field;
 import io.github.qihuan92.activitystarter.compiler.utils.AptContext;
 import io.github.qihuan92.activitystarter.compiler.utils.PrebuiltTypes;
-import io.github.qihuan92.activitystarter.compiler.utils.StringUtils;
 import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
@@ -82,7 +81,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .forEach(element -> {
                     ActivityClass activityClass = activityClasses.get(element.getEnclosingElement());
                     if (activityClass != null) {
-                        activityClass.addFiled(new Field((Symbol.VarSymbol) element));
+                        activityClass.addFiled(new Field((VariableElement) element));
                     }
                 });
     }
@@ -193,22 +192,12 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         for (Field field : fields) {
             String name = field.getName();
             TypeName typeName = field.asTypeName().box();
-
-            if (field.isPrivate()) {
-                injectMethodBuilder.addStatement("typedInstance.set$L($T.<$T>get(savedInstanceState, $S, $L))",
-                        StringUtils.capitalize(name),
-                        PrebuiltTypes.BUNDLE_UTILS.java(),
-                        typeName,
-                        name,
-                        field.getDefaultValue());
-            } else {
-                injectMethodBuilder.addStatement("typedInstance.$L = $T.<$T>get(savedInstanceState, $S, $L)",
-                        name,
-                        PrebuiltTypes.BUNDLE_UTILS.java(),
-                        typeName,
-                        name,
-                        field.getDefaultValue());
-            }
+            injectMethodBuilder.addStatement("typedInstance.$L = $T.<$T>get(savedInstanceState, $S, $L)",
+                    name,
+                    PrebuiltTypes.BUNDLE_UTILS.java(),
+                    typeName,
+                    name,
+                    field.getDefaultValue());
         }
 
         injectMethodBuilder.endControlFlow().endControlFlow();
@@ -228,11 +217,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         Set<Field> fields = activityClass.getFields();
         for (Field field : fields) {
             String name = field.getName();
-            if (field.isPrivate()) {
-                saveStateMethodBuilder.addStatement("intent.putExtra($S, typedInstance.get$L())", name, StringUtils.capitalize(name));
-            } else {
-                saveStateMethodBuilder.addStatement("intent.putExtra($S, typedInstance.$L)", name, name);
-            }
+            saveStateMethodBuilder.addStatement("intent.putExtra($S, typedInstance.$L)", name, name);
         }
 
         saveStateMethodBuilder.addStatement("outState.putAll(intent.getExtras())").endControlFlow();

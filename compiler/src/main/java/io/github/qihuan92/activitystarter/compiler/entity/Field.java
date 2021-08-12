@@ -2,10 +2,10 @@ package io.github.qihuan92.activitystarter.compiler.entity;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
-import com.sun.tools.javac.code.Symbol;
 
 import java.util.Locale;
 
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 
 import io.github.qihuan92.activitystarter.annotation.Extra;
@@ -21,28 +21,28 @@ import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
 public class Field implements Comparable<Field> {
     public static final String CONST_EXTRA_PREFIX = "EXTRA_";
 
-    private final Symbol.VarSymbol symbol;
+    private final VariableElement variableElement;
     private final String name;
     private final boolean required;
     private Object defaultValue;
 
-    public Field(Symbol.VarSymbol symbol) {
-        this.symbol = symbol;
+    public Field(VariableElement variableElement) {
+        this.variableElement = variableElement;
 
-        Extra extraAnnotation = symbol.getAnnotation(Extra.class);
+        Extra extraAnnotation = variableElement.getAnnotation(Extra.class);
         String name = extraAnnotation.value();
 
         this.required = extraAnnotation.required();
         if (!name.isEmpty()) {
             this.name = name;
         } else {
-            this.name = symbol.getQualifiedName().toString();
+            this.name = variableElement.getSimpleName().toString();
         }
-        setDefaultValue(extraAnnotation, symbol);
+        setDefaultValue(extraAnnotation, variableElement);
     }
 
-    private void setDefaultValue(Extra extraAnnotation, Symbol.VarSymbol symbol) {
-        TypeKind kind = symbol.type.getKind();
+    private void setDefaultValue(Extra extraAnnotation, VariableElement variableElement) {
+        TypeKind kind = variableElement.asType().getKind();
         switch (kind) {
             case CHAR:
                 this.defaultValue = String.format("'%c'", extraAnnotation.charValue());
@@ -69,15 +69,11 @@ public class Field implements Comparable<Field> {
                 this.defaultValue = extraAnnotation.booleanValue();
                 break;
             default:
-                if (TypeUtils.isSameType(symbol.type, String.class)) {
+                if (TypeUtils.isSameType(variableElement.asType(), String.class)) {
                     this.defaultValue = String.format("\"%s\"", extraAnnotation.stringValue());
                 }
                 break;
         }
-    }
-
-    public Symbol.VarSymbol getSymbol() {
-        return symbol;
     }
 
     public String getName() {
@@ -89,15 +85,11 @@ public class Field implements Comparable<Field> {
     }
 
     public TypeName asTypeName() {
-        return ClassName.get(symbol.type);
+        return ClassName.get(variableElement.asType());
     }
 
     public String getConstFieldName() {
         return CONST_EXTRA_PREFIX + StringUtils.camelToUnderline(name).toUpperCase();
-    }
-
-    public boolean isPrivate() {
-        return symbol.isPrivate();
     }
 
     public Object getDefaultValue() {
