@@ -1,7 +1,8 @@
 package io.github.qihuan92.activitystarter.compiler.entity;
 
-import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
 import com.squareup.javapoet.TypeName;
+
+import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
 
 /**
  * ClassType

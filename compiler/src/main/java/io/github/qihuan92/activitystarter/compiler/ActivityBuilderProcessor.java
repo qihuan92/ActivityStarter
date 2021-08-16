@@ -5,6 +5,7 @@ import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -28,7 +29,7 @@ import io.github.qihuan92.activitystarter.annotation.Builder;
 import io.github.qihuan92.activitystarter.annotation.Extra;
 import io.github.qihuan92.activitystarter.annotation.Generated;
 import io.github.qihuan92.activitystarter.compiler.entity.ActivityClass;
-import io.github.qihuan92.activitystarter.compiler.entity.Field;
+import io.github.qihuan92.activitystarter.compiler.entity.RequestFieldEntity;
 import io.github.qihuan92.activitystarter.compiler.utils.AptContext;
 import io.github.qihuan92.activitystarter.compiler.utils.PrebuiltTypes;
 import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
@@ -81,7 +82,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .forEach(element -> {
                     ActivityClass activityClass = activityClasses.get(element.getEnclosingElement());
                     if (activityClass != null) {
-                        activityClass.addFiled(new Field((VariableElement) element));
+                        activityClass.addFiled(new RequestFieldEntity((VariableElement) element));
                     }
                 });
     }
@@ -108,15 +109,16 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         buildInjectMethod(activityClass, builder);
         buildSaveStateMethod(activityClass, builder);
         buildNewIntentMethod(activityClass, builder);
-        buildStartMethod(builder);
+        buildStartMethod(activityClass, builder);
+        buildFinishMethod(activityClass, builder);
     }
 
     private void buildConstant(ActivityClass activityClass, TypeSpec.Builder builder) {
-        Set<Field> fields = activityClass.getFields();
-        for (Field field : fields) {
+        Set<RequestFieldEntity> requestFieldEntities = activityClass.getRequestFields();
+        for (RequestFieldEntity requestFieldEntity : requestFieldEntities) {
             builder.addField(
-                    FieldSpec.builder(String.class, field.getConstFieldName(), Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                            .initializer("$S", field.getName())
+                    FieldSpec.builder(String.class, requestFieldEntity.getConstFieldName(), Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                            .initializer("$S", requestFieldEntity.getName())
                             .build()
             );
         }
@@ -131,29 +133,29 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .returns(builderClassTypeName)
                 .addStatement("$T builder = new $T()", builderClassTypeName, builderClassTypeName);
 
-        Set<Field> fields = activityClass.getFields();
-        for (Field field : fields) {
+        Set<RequestFieldEntity> requestFieldEntities = activityClass.getRequestFields();
+        for (RequestFieldEntity requestFieldEntity : requestFieldEntities) {
             // 变量
             builder.addField(
-                    FieldSpec.builder(field.asTypeName(), field.getName(), Modifier.PRIVATE).build()
+                    FieldSpec.builder(requestFieldEntity.asTypeName(), requestFieldEntity.getName(), Modifier.PRIVATE).build()
             );
 
-            if (field.isRequired()) {
+            if (requestFieldEntity.isRequired()) {
                 // 添加到 builder() 参数
                 builderMethodBuilder.addParameter(
-                        ParameterSpec.builder(field.asTypeName(), field.getName())
+                        ParameterSpec.builder(requestFieldEntity.asTypeName(), requestFieldEntity.getName())
                                 .build()
                 );
 
                 // 变量赋值
-                builderMethodBuilder.addStatement("builder.$L = $L", field.getName(), field.getName());
+                builderMethodBuilder.addStatement("builder.$L = $L", requestFieldEntity.getName(), requestFieldEntity.getName());
             } else {
                 // setter
                 builder.addMethod(
-                        MethodSpec.methodBuilder(field.getName())
+                        MethodSpec.methodBuilder(requestFieldEntity.getName())
                                 .addModifiers(Modifier.PUBLIC)
-                                .addParameter(field.asTypeName(), field.getName())
-                                .addStatement("this.$L = $L", field.getName(), field.getName())
+                                .addParameter(requestFieldEntity.asTypeName(), requestFieldEntity.getName())
+                                .addStatement("this.$L = $L", requestFieldEntity.getName(), requestFieldEntity.getName())
                                 .addStatement("return this")
                                 .returns(builderClassTypeName)
                                 .build()
@@ -171,9 +173,9 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .addParameter(PrebuiltTypes.CONTEXT.java(), "context")
                 .returns(PrebuiltTypes.INTENT.java())
                 .addStatement("$T intent = new $T(context, $T.class)", PrebuiltTypes.INTENT.java(), PrebuiltTypes.INTENT.java(), activityClass.getTypeElement());
-        Set<Field> fields = activityClass.getFields();
-        for (Field field : fields) {
-            intentMethodBuilder.addStatement("intent.putExtra($L, $L)", field.getConstFieldName(), field.getName());
+        Set<RequestFieldEntity> requestFieldEntities = activityClass.getRequestFields();
+        for (RequestFieldEntity requestFieldEntity : requestFieldEntities) {
+            intentMethodBuilder.addStatement("intent.putExtra($L, $L)", requestFieldEntity.getConstFieldName(), requestFieldEntity.getName());
         }
         intentMethodBuilder.addStatement("return intent");
         builder.addMethod(intentMethodBuilder.build());
@@ -188,16 +190,16 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .addStatement("$T typedInstance = ($T) instance", activityClass.getTypeElement(), activityClass.getTypeElement())
                 .beginControlFlow("if(savedInstanceState != null)");
 
-        Set<Field> fields = activityClass.getFields();
-        for (Field field : fields) {
-            String name = field.getName();
-            TypeName typeName = field.asTypeName().box();
+        Set<RequestFieldEntity> requestFieldEntities = activityClass.getRequestFields();
+        for (RequestFieldEntity requestFieldEntity : requestFieldEntities) {
+            String name = requestFieldEntity.getName();
+            TypeName typeName = requestFieldEntity.asTypeName().box();
             injectMethodBuilder.addStatement("typedInstance.$L = $T.<$T>get(savedInstanceState, $S, $L)",
                     name,
                     PrebuiltTypes.BUNDLE_UTILS.java(),
                     typeName,
                     name,
-                    field.getDefaultValue());
+                    requestFieldEntity.getDefaultValue());
         }
 
         injectMethodBuilder.endControlFlow().endControlFlow();
@@ -214,9 +216,9 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .addStatement("$T typedInstance = ($T) instance", activityClass.getTypeElement(), activityClass.getTypeElement())
                 .addStatement("$T intent = new $T()", PrebuiltTypes.INTENT.java(), PrebuiltTypes.INTENT.java());
 
-        Set<Field> fields = activityClass.getFields();
-        for (Field field : fields) {
-            String name = field.getName();
+        Set<RequestFieldEntity> requestFieldEntities = activityClass.getRequestFields();
+        for (RequestFieldEntity requestFieldEntity : requestFieldEntities) {
+            String name = requestFieldEntity.getName();
             saveStateMethodBuilder.addStatement("intent.putExtra($S, typedInstance.$L)", name, name);
         }
 
@@ -252,11 +254,15 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         builder.addMethod(newIntentWithUpdateMethodBuilder.build());
     }
 
-    private void buildStartMethod(TypeSpec.Builder builder) {
+    private void buildStartMethod(ActivityClass activityClass, TypeSpec.Builder builder) {
         builder.addMethod(startMethodBuilder(false).build());
         builder.addMethod(startMethodBuilder(true).build());
         builder.addMethod(startForResultMethodBuilder(false).build());
         builder.addMethod(startForResultMethodBuilder(true).build());
+        if (!activityClass.getResultFieldEntities().isEmpty()) {
+            builder.addMethod(startLauncherMethodBuilder(false).build());
+            builder.addMethod(startLauncherMethodBuilder(true).build());
+        }
     }
 
     private MethodSpec.Builder startMethodBuilder(boolean withOptions) {
@@ -279,7 +285,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     }
 
     private MethodSpec.Builder startForResultMethodBuilder(boolean withOptions) {
-        MethodSpec.Builder builder = MethodSpec.methodBuilder("startForResult")
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("start")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(PrebuiltTypes.ACTIVITY.java(), "activity")
                 .addParameter(TypeName.INT, "requestCode")
@@ -293,6 +299,37 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         }
 
         return builder;
+    }
+
+    private MethodSpec.Builder startLauncherMethodBuilder(boolean withOptions) {
+        MethodSpec.Builder builder = MethodSpec.methodBuilder("start")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(PrebuiltTypes.CONTEXT.java(), "context")
+                .addStatement("$T intent = getIntent(context)", PrebuiltTypes.INTENT.java());
+
+        builder.beginControlFlow("if(!(context instanceof Activity))");
+        builder.addStatement("intent.addFlags($T.FLAG_ACTIVITY_NEW_TASK)", PrebuiltTypes.INTENT.java());
+        builder.endControlFlow();
+
+        if (withOptions) {
+            builder.addParameter(PrebuiltTypes.ACTIVITY_OPTIONS.java(), "options");
+            builder.addStatement("launcher.launch(intent, options)");
+        } else {
+            builder.addStatement("launcher.launch(intent)");
+        }
+
+        ClassName launcherTypeNameClassName = ClassName.get("androidx.activity.result", "ActivityResultLauncher");
+        ParameterizedTypeName launcherTypeName = ParameterizedTypeName.get(launcherTypeNameClassName, PrebuiltTypes.INTENT.java());
+        ParameterSpec LauncherParameterSpec = ParameterSpec.builder(launcherTypeName, "launcher")
+                .build();
+        builder.addParameter(LauncherParameterSpec);
+
+        return builder;
+    }
+
+    private void buildFinishMethod(ActivityClass activityClass, TypeSpec.Builder builder) {
+        // todo 生成结果数据
+        // builder.addType();
     }
 
     private void writeJavaToFile(ActivityClass activityClass, TypeSpec typeSpec) {

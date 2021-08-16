@@ -1,4 +1,4 @@
-package io.github.qihuan92.activitystarter;
+package io.github.qihuan92.activitystarter.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import java.util.Locale;
 
+import io.github.qihuan92.activitystarter.R;
 import io.github.qihuan92.activitystarter.annotation.Builder;
 import io.github.qihuan92.activitystarter.annotation.Extra;
 
@@ -50,6 +51,7 @@ public class DetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
 
+        bindView();
         initView();
     }
 
@@ -59,10 +61,12 @@ public class DetailActivity extends AppCompatActivity {
         DetailActivityBuilder.processNewIntent(this, intent);
     }
 
-    private void initView() {
+    private void bindView() {
         toolbar = findViewById(R.id.toolbar);
         tvId = findViewById(R.id.tv_id);
+    }
 
+    private void initView() {
         toolbar.setTitle(title);
         toolbar.setNavigationOnClickListener(view -> onBackPressed());
 

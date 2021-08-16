@@ -13,5 +13,7 @@ public interface PrebuiltTypes {
     ClassType INTENT = new ClassType("android.content.Intent");
     ClassType ACTIVITY = new ClassType("android.app.Activity");
     ClassType BUNDLE = new ClassType("android.os.Bundle");
+    ClassType ACTIVITY_OPTIONS = new ClassType("androidx.core.app.ActivityOptionsCompat");
+    ClassType ACTIVITY_RESULT_LAUNCHER = new ClassType("androidx.activity.result.ActivityResultLauncher");
     ClassType BUNDLE_UTILS = new ClassType("io.github.qihuan92.activitystarter.utils.BundleUtils");
 }

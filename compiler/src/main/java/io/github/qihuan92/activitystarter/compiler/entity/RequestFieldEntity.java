@@ -18,7 +18,7 @@ import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
  * @author qi
  * @since 2021/8/3
  */
-public class Field implements Comparable<Field> {
+public class RequestFieldEntity implements Comparable<RequestFieldEntity> {
     public static final String CONST_EXTRA_PREFIX = "EXTRA_";
 
     private final VariableElement variableElement;
@@ -26,7 +26,7 @@ public class Field implements Comparable<Field> {
     private final boolean required;
     private Object defaultValue;
 
-    public Field(VariableElement variableElement) {
+    public RequestFieldEntity(VariableElement variableElement) {
         this.variableElement = variableElement;
 
         Extra extraAnnotation = variableElement.getAnnotation(Extra.class);
@@ -97,7 +97,7 @@ public class Field implements Comparable<Field> {
     }
 
     @Override
-    public int compareTo(Field other) {
+    public int compareTo(RequestFieldEntity other) {
         return name.compareTo(other.name);
     }
 }

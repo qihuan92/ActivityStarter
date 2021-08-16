@@ -18,6 +18,11 @@ public class TypeUtils {
         return elements.getTypeElement(className).asType();
     }
 
+    public static TypeMirror getTypeMirror(Class<?> type) {
+        Elements elements = AptContext.getInstance().getElements();
+        return elements.getTypeElement(type.getCanonicalName()).asType();
+    }
+
     public static TypeName getJavaTypeName(String className) {
         Types types = AptContext.getInstance().getTypes();
         TypeMirror typeMirror = getTypeFromClassName(className);
