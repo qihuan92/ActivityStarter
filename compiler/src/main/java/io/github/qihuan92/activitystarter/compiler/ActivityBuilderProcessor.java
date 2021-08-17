@@ -112,6 +112,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         buildNewIntentMethod(activityClass, builder);
         buildStartMethod(activityClass, builder);
         buildFinishMethod(activityClass, builder);
+        buildResultContractTypes(activityClass, builder);
     }
 
     private void buildConstant(ActivityClass activityClass, TypeSpec.Builder builder) {
@@ -319,8 +320,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
             builder.addStatement("launcher.launch(intent)");
         }
 
-        ClassName launcherTypeNameClassName = ClassName.get("androidx.activity.result", "ActivityResultLauncher");
-        ParameterizedTypeName launcherTypeName = ParameterizedTypeName.get(launcherTypeNameClassName, PrebuiltTypes.INTENT.typeName());
+        ParameterizedTypeName launcherTypeName = ParameterizedTypeName.get(PrebuiltTypes.ACTIVITY_RESULT_LAUNCHER, PrebuiltTypes.INTENT.typeName());
         ParameterSpec LauncherParameterSpec = ParameterSpec.builder(launcherTypeName, "launcher")
                 .build();
         builder.addParameter(LauncherParameterSpec);
@@ -351,26 +351,49 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
 
         finishMethodBuilder.addStatement("$T.finishAfterTransition(activity)", PrebuiltTypes.ACTIVITY_COMPAT.typeName());
         builder.addMethod(finishMethodBuilder.build());
+    }
 
+    private void buildResultContractTypes(ActivityClass activityClass, TypeSpec.Builder builder) {
+        Set<ResultFieldEntity> resultFieldEntities = activityClass.getResultFieldEntities();
         if (resultFieldEntities.isEmpty()) {
             return;
         }
-
         // 生成返回结果实体类
         TypeSpec.Builder resultClassBuilder = TypeSpec.classBuilder("Result")
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addField(TypeName.INT, "resultCode", Modifier.PUBLIC);
         for (ResultFieldEntity resultFieldEntity : resultFieldEntities) {
-            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(resultFieldEntity.getTypeName(), resultFieldEntity.getName(), Modifier.PUBLIC);
-            resultClassBuilder.addField(fieldSpecBuilder.build());
+            resultClassBuilder.addField(resultFieldEntity.getTypeName(), resultFieldEntity.getName(), Modifier.PUBLIC);
         }
         builder.addType(resultClassBuilder.build());
+
+        ClassName resultClassName = ClassName.bestGuess("Result");
+
+        // 生成结果解析方法
+        MethodSpec.Builder obtainResultMethodBuilder = MethodSpec.methodBuilder("obtainResult")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(TypeName.INT, "resultCode")
+                .addParameter(PrebuiltTypes.INTENT.typeName(), "intent")
+                .returns(resultClassName)
+                .addStatement("$T result = new $T()", resultClassName, resultClassName)
+                .addStatement("result.resultCode = resultCode")
+                .beginControlFlow("if(intent != null)")
+                .addStatement("$T bundle = intent.getExtras()", PrebuiltTypes.BUNDLE.typeName());
+        for (ResultFieldEntity resultFieldEntity : resultFieldEntities) {
+            String name = resultFieldEntity.getName();
+            TypeName typeName = resultFieldEntity.getTypeName();
+            obtainResultMethodBuilder.addStatement("result.$L = $T.<$T>get(bundle, $S)", name, PrebuiltTypes.BUNDLE_UTILS.typeName(), typeName, name);
+        }
+        obtainResultMethodBuilder.endControlFlow();
+        obtainResultMethodBuilder.addStatement("return result");
+        builder.addMethod(obtainResultMethodBuilder.build());
+
 
         // 生成 ResultContract
         TypeSpec.Builder resultContractClassBuilder = TypeSpec.classBuilder("ResultContract")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
-        ClassName resultClassName = ClassName.bestGuess("Result");
-        ParameterizedTypeName activityContractTypeName = ParameterizedTypeName.get(PrebuiltTypes.ACTIVITY_RESULT_LAUNCHER, PrebuiltTypes.INTENT.typeName(), resultClassName);
+        ParameterizedTypeName activityContractTypeName = ParameterizedTypeName.get(PrebuiltTypes.ACTIVITY_RESULT_CONTRACT, PrebuiltTypes.INTENT.typeName(), resultClassName);
         resultContractClassBuilder.superclass(activityContractTypeName);
 
         resultContractClassBuilder.addMethod(MethodSpec.methodBuilder("createIntent")
@@ -392,20 +415,8 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .addParameter(TypeName.INT, "resultCode")
                 .addParameter(ParameterSpec.builder(PrebuiltTypes.INTENT.typeName(), "intent")
                         .addAnnotation(PrebuiltTypes.NULLABLE)
-                        .build());
-        parseResultMethodBuilder.beginControlFlow("if(intent == null)")
-                .addStatement("return null")
-                .endControlFlow();
-        parseResultMethodBuilder.addStatement("$T result = new $T()", resultClassName, resultClassName)
-                .addStatement("$T bundle = intent.getExtras()", PrebuiltTypes.BUNDLE.typeName());
-
-        for (ResultFieldEntity resultFieldEntity : resultFieldEntities) {
-            String name = resultFieldEntity.getName();
-            TypeName typeName = resultFieldEntity.getTypeName();
-            parseResultMethodBuilder.addStatement("result.$L = $T.<$T>get(bundle, $S)", name, PrebuiltTypes.BUNDLE_UTILS.typeName(), typeName, name);
-        }
-
-        parseResultMethodBuilder.addStatement("return result");
+                        .build())
+                .addStatement("return obtainResult(resultCode, intent)");
         resultContractClassBuilder.addMethod(parseResultMethodBuilder.build());
 
         builder.addType(resultContractClassBuilder.build());

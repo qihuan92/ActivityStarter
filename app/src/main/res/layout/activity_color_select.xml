@@ -11,7 +11,13 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        app:title="选择颜色"
-        app:navigationIcon="@drawable/ic_baseline_arrow_back_24" />
+        app:navigationIcon="@drawable/ic_baseline_arrow_back_24"
+        app:title="选择颜色" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/item_color" />
 </LinearLayout>
