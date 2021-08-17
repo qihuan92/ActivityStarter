@@ -92,6 +92,32 @@ annotationProcessor "io.github.qihuan92.activitystarter:activitystarter-compiler
        DetailActivityBuilder.processNewIntent(this, intent);
    }
    ```
+   
+5. 支持 Result API
+
+   在 `@Builder` 注解中传入需要返回的字段：
+
+   ```java
+   @Builder(resultFields = @ResultField(name = "color", type = String.class))
+   ```
+
+   则会生成相应的 Result 实体、 XXXActivityResultContract，以及 `obtainResult()` 方法，同时 `start()` 函数支持传入 `launcher` 参数，示例：
+
+   ```java
+   // 在 onStart() 之前注册
+   private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ColorSelectActivityBuilder.ResultContract(), result -> {
+       if (result.resultCode == RESULT_OK) {
+           ...
+       }
+   });
+   
+   btnSelectColor.setOnClickListener(view -> {
+       ColorSelectActivityBuilder.builder(currentColor)
+               .start(this, launcher);
+   });
+   ```
+
+   
 
 ## 许可
 
