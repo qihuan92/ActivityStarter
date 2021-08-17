@@ -23,7 +23,7 @@ public class TypeUtils {
         return elements.getTypeElement(type.getCanonicalName()).asType();
     }
 
-    public static TypeName getJavaTypeName(String className) {
+    public static TypeName getTypeName(String className) {
         Types types = AptContext.getInstance().getTypes();
         TypeMirror typeMirror = getTypeFromClassName(className);
         types.erasure(typeMirror);

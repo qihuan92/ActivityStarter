@@ -30,6 +30,7 @@ import io.github.qihuan92.activitystarter.annotation.Extra;
 import io.github.qihuan92.activitystarter.annotation.Generated;
 import io.github.qihuan92.activitystarter.compiler.entity.ActivityClass;
 import io.github.qihuan92.activitystarter.compiler.entity.RequestFieldEntity;
+import io.github.qihuan92.activitystarter.compiler.entity.ResultFieldEntity;
 import io.github.qihuan92.activitystarter.compiler.utils.AptContext;
 import io.github.qihuan92.activitystarter.compiler.utils.PrebuiltTypes;
 import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
@@ -170,9 +171,9 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     private void buildIntentMethod(ActivityClass activityClass, TypeSpec.Builder builder) {
         MethodSpec.Builder intentMethodBuilder = MethodSpec.methodBuilder("getIntent")
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(PrebuiltTypes.CONTEXT.java(), "context")
-                .returns(PrebuiltTypes.INTENT.java())
-                .addStatement("$T intent = new $T(context, $T.class)", PrebuiltTypes.INTENT.java(), PrebuiltTypes.INTENT.java(), activityClass.getTypeElement());
+                .addParameter(PrebuiltTypes.CONTEXT.typeName(), "context")
+                .returns(PrebuiltTypes.INTENT.typeName())
+                .addStatement("$T intent = new $T(context, $T.class)", PrebuiltTypes.INTENT.typeName(), PrebuiltTypes.INTENT.typeName(), activityClass.getTypeElement());
         Set<RequestFieldEntity> requestFieldEntities = activityClass.getRequestFields();
         for (RequestFieldEntity requestFieldEntity : requestFieldEntities) {
             intentMethodBuilder.addStatement("intent.putExtra($L, $L)", requestFieldEntity.getConstFieldName(), requestFieldEntity.getName());
@@ -184,8 +185,8 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     private void buildInjectMethod(ActivityClass activityClass, TypeSpec.Builder builder) {
         MethodSpec.Builder injectMethodBuilder = MethodSpec.methodBuilder("inject")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .addParameter(PrebuiltTypes.ACTIVITY.java(), "instance")
-                .addParameter(PrebuiltTypes.BUNDLE.java(), "savedInstanceState")
+                .addParameter(PrebuiltTypes.ACTIVITY.typeName(), "instance")
+                .addParameter(PrebuiltTypes.BUNDLE.typeName(), "savedInstanceState")
                 .beginControlFlow("if(instance instanceof $T)", activityClass.getTypeElement())
                 .addStatement("$T typedInstance = ($T) instance", activityClass.getTypeElement(), activityClass.getTypeElement())
                 .beginControlFlow("if(savedInstanceState != null)");
@@ -196,7 +197,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
             TypeName typeName = requestFieldEntity.asTypeName().box();
             injectMethodBuilder.addStatement("typedInstance.$L = $T.<$T>get(savedInstanceState, $S, $L)",
                     name,
-                    PrebuiltTypes.BUNDLE_UTILS.java(),
+                    PrebuiltTypes.BUNDLE_UTILS.typeName(),
                     typeName,
                     name,
                     requestFieldEntity.getDefaultValue());
@@ -210,11 +211,11 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         MethodSpec.Builder saveStateMethodBuilder = MethodSpec.methodBuilder("saveState")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .returns(TypeName.VOID)
-                .addParameter(PrebuiltTypes.ACTIVITY.java(), "instance")
-                .addParameter(PrebuiltTypes.BUNDLE.java(), "outState")
+                .addParameter(PrebuiltTypes.ACTIVITY.typeName(), "instance")
+                .addParameter(PrebuiltTypes.BUNDLE.typeName(), "outState")
                 .beginControlFlow("if(instance instanceof $T)", activityClass.getTypeElement())
                 .addStatement("$T typedInstance = ($T) instance", activityClass.getTypeElement(), activityClass.getTypeElement())
-                .addStatement("$T intent = new $T()", PrebuiltTypes.INTENT.java(), PrebuiltTypes.INTENT.java());
+                .addStatement("$T intent = new $T()", PrebuiltTypes.INTENT.typeName(), PrebuiltTypes.INTENT.typeName());
 
         Set<RequestFieldEntity> requestFieldEntities = activityClass.getRequestFields();
         for (RequestFieldEntity requestFieldEntity : requestFieldEntities) {
@@ -231,7 +232,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
                 .returns(TypeName.VOID)
                 .addParameter(TypeName.get(activityClass.getTypeElement().asType()), "activity")
-                .addParameter(PrebuiltTypes.INTENT.java(), "intent");
+                .addParameter(PrebuiltTypes.INTENT.typeName(), "intent");
         newIntentMethodBuilder.addStatement("processNewIntent(activity, intent, true)");
 
         builder.addMethod(newIntentMethodBuilder.build());
@@ -240,7 +241,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .addModifiers(Modifier.STATIC, Modifier.PUBLIC)
                 .returns(TypeName.VOID)
                 .addParameter(TypeName.get(activityClass.getTypeElement().asType()), "activity")
-                .addParameter(PrebuiltTypes.INTENT.java(), "intent")
+                .addParameter(PrebuiltTypes.INTENT.typeName(), "intent")
                 .addParameter(Boolean.class, "updateIntent");
 
         newIntentWithUpdateMethodBuilder.beginControlFlow("if(updateIntent)")
@@ -268,15 +269,15 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     private MethodSpec.Builder startMethodBuilder(boolean withOptions) {
         MethodSpec.Builder builder = MethodSpec.methodBuilder("start")
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(PrebuiltTypes.CONTEXT.java(), "context")
-                .addStatement("$T intent = getIntent(context)", PrebuiltTypes.INTENT.java());
+                .addParameter(PrebuiltTypes.CONTEXT.typeName(), "context")
+                .addStatement("$T intent = getIntent(context)", PrebuiltTypes.INTENT.typeName());
 
         builder.beginControlFlow("if(!(context instanceof Activity))");
-        builder.addStatement("intent.addFlags($T.FLAG_ACTIVITY_NEW_TASK)", PrebuiltTypes.INTENT.java());
+        builder.addStatement("intent.addFlags($T.FLAG_ACTIVITY_NEW_TASK)", PrebuiltTypes.INTENT.typeName());
         builder.endControlFlow();
 
         if (withOptions) {
-            builder.addParameter(PrebuiltTypes.BUNDLE.java(), "options");
+            builder.addParameter(PrebuiltTypes.BUNDLE.typeName(), "options");
             builder.addStatement("context.startActivity(intent, options)");
         } else {
             builder.addStatement("context.startActivity(intent)");
@@ -287,12 +288,12 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     private MethodSpec.Builder startForResultMethodBuilder(boolean withOptions) {
         MethodSpec.Builder builder = MethodSpec.methodBuilder("start")
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(PrebuiltTypes.ACTIVITY.java(), "activity")
+                .addParameter(PrebuiltTypes.ACTIVITY.typeName(), "activity")
                 .addParameter(TypeName.INT, "requestCode")
-                .addStatement("$T intent = getIntent(activity)", PrebuiltTypes.INTENT.java());
+                .addStatement("$T intent = getIntent(activity)", PrebuiltTypes.INTENT.typeName());
 
         if (withOptions) {
-            builder.addParameter(PrebuiltTypes.BUNDLE.java(), "options");
+            builder.addParameter(PrebuiltTypes.BUNDLE.typeName(), "options");
             builder.addStatement("activity.startActivityForResult(intent, requestCode, options)");
         } else {
             builder.addStatement("activity.startActivityForResult(intent, requestCode)");
@@ -304,22 +305,22 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     private MethodSpec.Builder startLauncherMethodBuilder(boolean withOptions) {
         MethodSpec.Builder builder = MethodSpec.methodBuilder("start")
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(PrebuiltTypes.CONTEXT.java(), "context")
-                .addStatement("$T intent = getIntent(context)", PrebuiltTypes.INTENT.java());
+                .addParameter(PrebuiltTypes.CONTEXT.typeName(), "context")
+                .addStatement("$T intent = getIntent(context)", PrebuiltTypes.INTENT.typeName());
 
         builder.beginControlFlow("if(!(context instanceof Activity))");
-        builder.addStatement("intent.addFlags($T.FLAG_ACTIVITY_NEW_TASK)", PrebuiltTypes.INTENT.java());
+        builder.addStatement("intent.addFlags($T.FLAG_ACTIVITY_NEW_TASK)", PrebuiltTypes.INTENT.typeName());
         builder.endControlFlow();
 
         if (withOptions) {
-            builder.addParameter(PrebuiltTypes.ACTIVITY_OPTIONS.java(), "options");
+            builder.addParameter(PrebuiltTypes.ACTIVITY_OPTIONS.typeName(), "options");
             builder.addStatement("launcher.launch(intent, options)");
         } else {
             builder.addStatement("launcher.launch(intent)");
         }
 
         ClassName launcherTypeNameClassName = ClassName.get("androidx.activity.result", "ActivityResultLauncher");
-        ParameterizedTypeName launcherTypeName = ParameterizedTypeName.get(launcherTypeNameClassName, PrebuiltTypes.INTENT.java());
+        ParameterizedTypeName launcherTypeName = ParameterizedTypeName.get(launcherTypeNameClassName, PrebuiltTypes.INTENT.typeName());
         ParameterSpec LauncherParameterSpec = ParameterSpec.builder(launcherTypeName, "launcher")
                 .build();
         builder.addParameter(LauncherParameterSpec);
@@ -328,8 +329,86 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
     }
 
     private void buildFinishMethod(ActivityClass activityClass, TypeSpec.Builder builder) {
-        // todo 生成结果数据
-        // builder.addType();
+        Set<ResultFieldEntity> resultFieldEntities = activityClass.getResultFieldEntities();
+
+        // 生成返回方法
+        MethodSpec.Builder finishMethodBuilder = MethodSpec.methodBuilder("finish")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(PrebuiltTypes.ACTIVITY.typeName(), "activity")
+                .returns(TypeName.VOID);
+
+        if (!resultFieldEntities.isEmpty()) {
+            finishMethodBuilder.addStatement("$T intent = new $T()", PrebuiltTypes.INTENT.typeName(), PrebuiltTypes.INTENT.typeName());
+            finishMethodBuilder.addStatement("activity.setResult($T.RESULT_OK, intent)", PrebuiltTypes.ACTIVITY.typeName());
+            for (ResultFieldEntity resultFieldEntity : resultFieldEntities) {
+                String name = resultFieldEntity.getName();
+                TypeName typeName = resultFieldEntity.getTypeName();
+                finishMethodBuilder.addParameter(typeName, name);
+
+                finishMethodBuilder.addStatement("intent.putExtra($S, $L)", name, name);
+            }
+        }
+
+        finishMethodBuilder.addStatement("$T.finishAfterTransition(activity)", PrebuiltTypes.ACTIVITY_COMPAT.typeName());
+        builder.addMethod(finishMethodBuilder.build());
+
+        if (resultFieldEntities.isEmpty()) {
+            return;
+        }
+
+        // 生成返回结果实体类
+        TypeSpec.Builder resultClassBuilder = TypeSpec.classBuilder("Result")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+        for (ResultFieldEntity resultFieldEntity : resultFieldEntities) {
+            FieldSpec.Builder fieldSpecBuilder = FieldSpec.builder(resultFieldEntity.getTypeName(), resultFieldEntity.getName(), Modifier.PUBLIC);
+            resultClassBuilder.addField(fieldSpecBuilder.build());
+        }
+        builder.addType(resultClassBuilder.build());
+
+        // 生成 ResultContract
+        TypeSpec.Builder resultContractClassBuilder = TypeSpec.classBuilder("ResultContract")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+
+        ClassName resultClassName = ClassName.bestGuess("Result");
+        ParameterizedTypeName activityContractTypeName = ParameterizedTypeName.get(PrebuiltTypes.ACTIVITY_RESULT_LAUNCHER, PrebuiltTypes.INTENT.typeName(), resultClassName);
+        resultContractClassBuilder.superclass(activityContractTypeName);
+
+        resultContractClassBuilder.addMethod(MethodSpec.methodBuilder("createIntent")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(PrebuiltTypes.INTENT.typeName())
+                .addAnnotation(PrebuiltTypes.NON_NULL)
+                .addAnnotation(Override.class)
+                .addParameter(ParameterSpec.builder(PrebuiltTypes.CONTEXT.typeName(), "context")
+                        .addAnnotation(PrebuiltTypes.NON_NULL)
+                        .build())
+                .addParameter(PrebuiltTypes.INTENT.typeName(), "input")
+                .addStatement("return input")
+                .build());
+
+        MethodSpec.Builder parseResultMethodBuilder = MethodSpec.methodBuilder("parseResult")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(resultClassName)
+                .addAnnotation(Override.class)
+                .addParameter(TypeName.INT, "resultCode")
+                .addParameter(ParameterSpec.builder(PrebuiltTypes.INTENT.typeName(), "intent")
+                        .addAnnotation(PrebuiltTypes.NULLABLE)
+                        .build());
+        parseResultMethodBuilder.beginControlFlow("if(intent == null)")
+                .addStatement("return null")
+                .endControlFlow();
+        parseResultMethodBuilder.addStatement("$T result = new $T()", resultClassName, resultClassName)
+                .addStatement("$T bundle = intent.getExtras()", PrebuiltTypes.BUNDLE.typeName());
+
+        for (ResultFieldEntity resultFieldEntity : resultFieldEntities) {
+            String name = resultFieldEntity.getName();
+            TypeName typeName = resultFieldEntity.getTypeName();
+            parseResultMethodBuilder.addStatement("result.$L = $T.<$T>get(bundle, $S)", name, PrebuiltTypes.BUNDLE_UTILS.typeName(), typeName, name);
+        }
+
+        parseResultMethodBuilder.addStatement("return result");
+        resultContractClassBuilder.addMethod(parseResultMethodBuilder.build());
+
+        builder.addType(resultContractClassBuilder.build());
     }
 
     private void writeJavaToFile(ActivityClass activityClass, TypeSpec typeSpec) {

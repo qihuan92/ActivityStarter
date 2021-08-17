@@ -17,7 +17,7 @@ public class ClassType {
         this.className = className;
     }
 
-    public TypeName java() {
-        return TypeUtils.getJavaTypeName(className);
+    public TypeName typeName() {
+        return TypeUtils.getTypeName(className);
     }
 }

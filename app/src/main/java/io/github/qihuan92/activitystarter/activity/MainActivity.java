@@ -4,10 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import io.github.qihuan92.activitystarter.R;
@@ -17,11 +14,8 @@ public class MainActivity extends AppCompatActivity {
     private Button btnDetail;
     private Button btnSelectColor;
 
-    private ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-        @Override
-        public void onActivityResult(ActivityResult result) {
+    private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ColorSelectActivityBuilder.ResultContract(), result -> {
 
-        }
     });
 
     @Override
@@ -46,7 +40,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         btnSelectColor.setOnClickListener(view -> {
-
+            ColorSelectActivityBuilder.builder("123")
+                    .start(this, launcher);
         });
     }
 }

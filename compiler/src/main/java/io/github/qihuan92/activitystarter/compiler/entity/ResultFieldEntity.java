@@ -1,5 +1,7 @@
 package io.github.qihuan92.activitystarter.compiler.entity;
 
+import com.squareup.javapoet.TypeName;
+
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -10,28 +12,20 @@ import javax.lang.model.type.TypeMirror;
  */
 public class ResultFieldEntity implements Comparable<ResultFieldEntity> {
 
-    private String name;
-    private TypeMirror type;
+    private final String name;
+    private final TypeMirror type;
 
     public ResultFieldEntity(String name, TypeMirror type) {
         this.name = name;
         this.type = type;
     }
 
+    public TypeName getTypeName() {
+        return TypeName.get(type);
+    }
+
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public TypeMirror getType() {
-        return type;
-    }
-
-    public void setType(TypeMirror type) {
-        this.type = type;
     }
 
     @Override
