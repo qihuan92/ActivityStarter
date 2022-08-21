@@ -4,6 +4,8 @@
     <bytecodeTargetLevel target="1.8">
       <module name="ActivityStarter.app" target="11" />
       <module name="ActivityStarter.compiler" target="11" />
+      <module name="ActivityStarter.compiler.main" target="11" />
+      <module name="ActivityStarter.compiler.test" target="11" />
       <module name="ActivityStarter.runtime" target="11" />
     </bytecodeTargetLevel>
   </component>

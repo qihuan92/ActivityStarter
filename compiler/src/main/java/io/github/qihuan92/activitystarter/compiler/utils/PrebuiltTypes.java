@@ -21,6 +21,8 @@ public interface PrebuiltTypes {
 
     ClassName ACTIVITY_RESULT_LAUNCHER = ClassName.get("androidx.activity.result", "ActivityResultLauncher");
     ClassName ACTIVITY_RESULT_CONTRACT = ClassName.get("androidx.activity.result.contract", "ActivityResultContract");
+    ClassName ACTIVITY_RESULT_CALLER = ClassName.get("androidx.activity.result", "ActivityResultCaller");
+    ClassName ACTIVITY_RESULT_CALLBACK = ClassName.get("androidx.activity.result", "ActivityResultCallback");
     ClassName NON_NULL = ClassName.get("androidx.annotation", "NonNull");
     ClassName NULLABLE = ClassName.get("androidx.annotation", "Nullable");
 }

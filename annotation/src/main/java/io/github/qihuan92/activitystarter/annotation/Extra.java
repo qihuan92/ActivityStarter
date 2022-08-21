@@ -35,4 +35,6 @@ public @interface Extra {
     double doubleValue() default 0.0;
 
     boolean booleanValue() default false;
+
+    String description() default "";
 }

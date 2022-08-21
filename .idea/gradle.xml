@@ -17,7 +17,6 @@
             <option value="$PROJECT_DIR$/runtime" />
           </set>
         </option>
-        <option name="resolveModulePerSourceSet" value="false" />
       </GradleProjectSettings>
     </option>
   </component>

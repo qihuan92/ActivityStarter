@@ -1,6 +1,7 @@
 package io.github.qihuan92.activitystarter.compiler;
 
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -110,7 +111,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         buildInjectMethod(activityClass, builder);
         buildSaveStateMethod(activityClass, builder);
         buildNewIntentMethod(activityClass, builder);
-        buildStartMethod(activityClass, builder);
+        buildStartMethod(builder);
         buildFinishMethod(activityClass, builder);
         buildResultContractTypes(activityClass, builder);
     }
@@ -135,6 +136,9 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .returns(builderClassTypeName)
                 .addStatement("$T builder = new $T()", builderClassTypeName, builderClassTypeName);
 
+        // 必传参数注释
+        CodeBlock.Builder requiredParamDocsBuilder = CodeBlock.builder();
+
         Set<RequestFieldEntity> requestFieldEntities = activityClass.getRequestFields();
         for (RequestFieldEntity requestFieldEntity : requestFieldEntities) {
             // 变量
@@ -151,12 +155,17 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
 
                 // 变量赋值
                 builderMethodBuilder.addStatement("builder.$L = $L", requestFieldEntity.getName(), requestFieldEntity.getName());
+
+                // 注释
+                requiredParamDocsBuilder.add("@param $L $L", requestFieldEntity.getName(), requestFieldEntity.getDescription())
+                        .add("\n");
             } else {
                 // setter
                 builder.addMethod(
                         MethodSpec.methodBuilder(requestFieldEntity.getName())
                                 .addModifiers(Modifier.PUBLIC)
                                 .addParameter(requestFieldEntity.asTypeName(), requestFieldEntity.getName())
+                                .addJavadoc("@param $L $L", requestFieldEntity.getName(), requestFieldEntity.getDescription())
                                 .addStatement("this.$L = $L", requestFieldEntity.getName(), requestFieldEntity.getName())
                                 .addStatement("return this")
                                 .returns(builderClassTypeName)
@@ -165,6 +174,9 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
             }
 
         }
+
+        // 为 builder() 方法添加注释
+        builderMethodBuilder.addJavadoc(requiredParamDocsBuilder.build());
 
         builder.addMethod(builderMethodBuilder.addStatement("return builder").build());
     }
@@ -256,15 +268,11 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         builder.addMethod(newIntentWithUpdateMethodBuilder.build());
     }
 
-    private void buildStartMethod(ActivityClass activityClass, TypeSpec.Builder builder) {
+    private void buildStartMethod(TypeSpec.Builder builder) {
         builder.addMethod(startMethodBuilder(false).build());
         builder.addMethod(startMethodBuilder(true).build());
         builder.addMethod(startForResultMethodBuilder(false).build());
         builder.addMethod(startForResultMethodBuilder(true).build());
-        if (!activityClass.getResultFieldEntities().isEmpty()) {
-            builder.addMethod(startLauncherMethodBuilder(false).build());
-            builder.addMethod(startLauncherMethodBuilder(true).build());
-        }
     }
 
     private MethodSpec.Builder startMethodBuilder(boolean withOptions) {
@@ -299,31 +307,6 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         } else {
             builder.addStatement("activity.startActivityForResult(intent, requestCode)");
         }
-
-        return builder;
-    }
-
-    private MethodSpec.Builder startLauncherMethodBuilder(boolean withOptions) {
-        MethodSpec.Builder builder = MethodSpec.methodBuilder("start")
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(PrebuiltTypes.CONTEXT.typeName(), "context")
-                .addStatement("$T intent = getIntent(context)", PrebuiltTypes.INTENT.typeName());
-
-        builder.beginControlFlow("if(!(context instanceof Activity))");
-        builder.addStatement("intent.addFlags($T.FLAG_ACTIVITY_NEW_TASK)", PrebuiltTypes.INTENT.typeName());
-        builder.endControlFlow();
-
-        if (withOptions) {
-            builder.addParameter(PrebuiltTypes.ACTIVITY_OPTIONS.typeName(), "options");
-            builder.addStatement("launcher.launch(intent, options)");
-        } else {
-            builder.addStatement("launcher.launch(intent)");
-        }
-
-        ParameterizedTypeName launcherTypeName = ParameterizedTypeName.get(PrebuiltTypes.ACTIVITY_RESULT_LAUNCHER, PrebuiltTypes.INTENT.typeName());
-        ParameterSpec LauncherParameterSpec = ParameterSpec.builder(launcherTypeName, "launcher")
-                .build();
-        builder.addParameter(LauncherParameterSpec);
 
         return builder;
     }
@@ -393,7 +376,8 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         TypeSpec.Builder resultContractClassBuilder = TypeSpec.classBuilder("ResultContract")
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
 
-        ParameterizedTypeName activityContractTypeName = ParameterizedTypeName.get(PrebuiltTypes.ACTIVITY_RESULT_CONTRACT, PrebuiltTypes.INTENT.typeName(), resultClassName);
+        ClassName builderClassTypeName = ClassName.get(activityClass.getPackageName(), activityClass.getBuilderClassName());
+        ParameterizedTypeName activityContractTypeName = ParameterizedTypeName.get(PrebuiltTypes.ACTIVITY_RESULT_CONTRACT, builderClassTypeName, resultClassName);
         resultContractClassBuilder.superclass(activityContractTypeName);
 
         resultContractClassBuilder.addMethod(MethodSpec.methodBuilder("createIntent")
@@ -404,8 +388,8 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .addParameter(ParameterSpec.builder(PrebuiltTypes.CONTEXT.typeName(), "context")
                         .addAnnotation(PrebuiltTypes.NON_NULL)
                         .build())
-                .addParameter(PrebuiltTypes.INTENT.typeName(), "input")
-                .addStatement("return input")
+                .addParameter(builderClassTypeName, "input")
+                .addStatement("return input.getIntent(context)")
                 .build());
 
         MethodSpec.Builder parseResultMethodBuilder = MethodSpec.methodBuilder("parseResult")
@@ -420,6 +404,19 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         resultContractClassBuilder.addMethod(parseResultMethodBuilder.build());
 
         builder.addType(resultContractClassBuilder.build());
+
+        // 生成 registerForActivityResult 方法
+        MethodSpec.Builder registerForActivityResultMethodBuilder = MethodSpec.methodBuilder("registerForActivityResult")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addParameter(ParameterSpec.builder(PrebuiltTypes.ACTIVITY_RESULT_CALLER, "resultCaller")
+                        .addAnnotation(PrebuiltTypes.NON_NULL)
+                        .build())
+                .addParameter(ParameterSpec.builder(ParameterizedTypeName.get(PrebuiltTypes.ACTIVITY_RESULT_CALLBACK, resultClassName), "callback")
+                        .addAnnotation(PrebuiltTypes.NON_NULL)
+                        .build())
+                .returns(ParameterizedTypeName.get(PrebuiltTypes.ACTIVITY_RESULT_LAUNCHER, builderClassTypeName))
+                .addStatement("return resultCaller.registerForActivityResult(new ResultContract(), callback)");
+        builder.addMethod(registerForActivityResultMethodBuilder.build());
     }
 
     private void writeJavaToFile(ActivityClass activityClass, TypeSpec typeSpec) {

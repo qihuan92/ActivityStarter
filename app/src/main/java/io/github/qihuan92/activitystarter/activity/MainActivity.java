@@ -20,14 +20,15 @@ public class MainActivity extends AppCompatActivity {
 
     private String currentColor;
 
-    private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ColorSelectActivityBuilder.ResultContract(), result -> {
-        if (result.resultCode == RESULT_OK) {
-            String color = result.color;
-            btnSelectColor.setBackgroundColor(Color.parseColor(color));
-            Toast.makeText(this, "选中颜色: " + color, Toast.LENGTH_SHORT).show();
-            currentColor = color;
-        }
-    });
+    private final ActivityResultLauncher<ColorSelectActivityBuilder> launcher =
+            ColorSelectActivityBuilder.registerForActivityResult(this, result -> {
+                if (result.resultCode == RESULT_OK) {
+                    String color = result.color;
+                    btnSelectColor.setBackgroundColor(Color.parseColor(color));
+                    Toast.makeText(this, "选中颜色: " + color, Toast.LENGTH_SHORT).show();
+                    currentColor = color;
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView() {
         btnDetail.setOnClickListener(view -> {
-            DetailActivityBuilder.builder(123456L)
+            DetailActivityBuilder.builder(123456L, "100008")
                     .title("测试标题")
                     .start(this);
         });
@@ -64,8 +65,7 @@ public class MainActivity extends AppCompatActivity {
             btnSelectColor.setBackgroundColor(Color.parseColor(currentColor));
         }
         btnSelectColor.setOnClickListener(view -> {
-            ColorSelectActivityBuilder.builder(currentColor)
-                    .start(this, launcher);
+            launcher.launch(ColorSelectActivityBuilder.builder(currentColor));
         });
     }
 }

@@ -24,6 +24,7 @@ public class RequestFieldEntity implements Comparable<RequestFieldEntity> {
     private final VariableElement variableElement;
     private final String name;
     private final boolean required;
+    private final String description;
     private Object defaultValue;
 
     public RequestFieldEntity(VariableElement variableElement) {
@@ -38,6 +39,7 @@ public class RequestFieldEntity implements Comparable<RequestFieldEntity> {
         } else {
             this.name = variableElement.getSimpleName().toString();
         }
+        this.description = extraAnnotation.description();
         setDefaultValue(extraAnnotation, variableElement);
     }
 
@@ -94,6 +96,10 @@ public class RequestFieldEntity implements Comparable<RequestFieldEntity> {
 
     public Object getDefaultValue() {
         return defaultValue;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     @Override
