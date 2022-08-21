@@ -90,6 +90,10 @@ public class RequestFieldEntity implements Comparable<RequestFieldEntity> {
         return ClassName.get(variableElement.asType());
     }
 
+    public VariableElement getVariableElement() {
+        return variableElement;
+    }
+
     public String getConstFieldName() {
         return CONST_EXTRA_PREFIX + StringUtils.camelToUnderline(name).toUpperCase();
     }
@@ -104,6 +108,10 @@ public class RequestFieldEntity implements Comparable<RequestFieldEntity> {
 
     @Override
     public int compareTo(RequestFieldEntity other) {
-        return name.compareTo(other.name);
+        if (!other.isRequired()) {
+            return name.compareTo(other.name);
+        } else {
+            return 1;
+        }
     }
 }

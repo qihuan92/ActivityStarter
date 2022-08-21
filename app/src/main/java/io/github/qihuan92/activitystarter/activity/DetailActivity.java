@@ -63,6 +63,22 @@ public class DetailActivity extends AppCompatActivity {
         initView();
     }
 
+    /**
+     * Start DetailActivity.
+     *
+     * @param context context
+     * @param id      id
+     * @param userId  userID
+     * @param title   detail content
+     */
+    public static void start(Context context, long id, String userId, String title) {
+        Intent intent = new Intent(context, DetailActivity.class);
+        intent.putExtra(EXTRA_ID, id);
+        intent.putExtra(EXTRA_USER_ID, userId);
+        intent.putExtra(EXTRA_TITLE, title);
+        context.startActivity(intent);
+    }
+
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);

@@ -41,6 +41,12 @@ public class MainActivity extends AppCompatActivity {
 
         bindView();
         initView();
+
+        Intent intent = new Intent(this, DetailActivity.class);
+        intent.putExtra("id", 123456L);
+        intent.putExtra("userId", "100008");
+        intent.putExtra("title", "测试");
+        startActivity(intent);
     }
 
     @Override

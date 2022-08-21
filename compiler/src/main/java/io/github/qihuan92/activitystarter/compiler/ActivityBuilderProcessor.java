@@ -114,6 +114,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
         buildStartMethod(builder);
         buildFinishMethod(activityClass, builder);
         buildResultContractTypes(activityClass, builder);
+        new KotlinExtGenerator(activityClass).execute();
     }
 
     private void buildConstant(ActivityClass activityClass, TypeSpec.Builder builder) {

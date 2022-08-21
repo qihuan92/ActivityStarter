@@ -11,7 +11,7 @@ import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
  * @since 2021/8/4
  */
 public class ClassType {
-    private final String className;
+    public final String className;
 
     public ClassType(String className) {
         this.className = className;
