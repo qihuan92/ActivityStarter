@@ -43,6 +43,7 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
     }
 
     private fun FunSpec.Builder.addActivityParameters(): FunSpec.Builder {
+        val kdocBuilder = CodeBlock.builder()
         activityClass.requestFields.forEach {
             if (it.isRequired) {
                 addParameter(it.name, it.kotlinTypeName)
@@ -53,7 +54,9 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
                         .build()
                 )
             }
+            kdocBuilder.add("@param ${it.name} ${it.description}\n")
         }
+        addKdoc(kdocBuilder.build())
         return this
     }
 
