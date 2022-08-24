@@ -25,6 +25,9 @@
         <activity
             android:name="io.github.qihuan92.activitystarter.activity.ColorSelectActivity"
             android:exported="true" />
+        <activity
+            android:name=".activity.KotlinActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

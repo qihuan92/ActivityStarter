@@ -23,6 +23,9 @@ public class ColorSelectActivity extends AppCompatActivity {
     @Extra
     String currentColor;
 
+    @Extra(required = false)
+    String title;
+
     private Toolbar toolbar;
     private RecyclerView rvList;
     private ColorAdapter colorAdapter;

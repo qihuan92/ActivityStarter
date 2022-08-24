@@ -1,12 +1,12 @@
 package io.github.qihuan92.activitystarter.compiler
 
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.github.qihuan92.activitystarter.annotation.Generated
 import io.github.qihuan92.activitystarter.compiler.entity.ActivityClass
 import io.github.qihuan92.activitystarter.compiler.utils.AptContext
 import io.github.qihuan92.activitystarter.compiler.utils.PrebuiltTypes
+import io.github.qihuan92.activitystarter.compiler.utils.kotlinClassName
 import io.github.qihuan92.activitystarter.compiler.utils.kotlinTypeName
 
 /**
@@ -17,6 +17,8 @@ import io.github.qihuan92.activitystarter.compiler.utils.kotlinTypeName
  */
 class KotlinExtGenerator(private val activityClass: ActivityClass) {
 
+    private val activityName = activityClass.typeElement.simpleName
+
     fun execute() {
         val builder = FileSpec.builder(activityClass.packageName, activityClass.builderClassName)
             .addAnnotation(Generated::class)
@@ -25,55 +27,79 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
         // 生成 Activity Result API 扩展函数
         if (activityClass.resultFieldEntities.isNotEmpty()) {
             buildResultAPIFun(builder)
+            buildResultAPILauncherExtFun(builder)
         }
         // 写入文件
         writeKotlinToFile(builder.build())
     }
 
     private fun buildStartFun(builder: FileSpec.Builder) {
-        val funBuilder = FunSpec.builder("start${activityClass.typeElement.simpleName}")
+        val funBuilder = FunSpec.builder("start${activityName}")
             .receiver(PrebuiltTypes.CONTEXT.kotlinTypeName)
+            .addActivityParameters()
+            .addActivityBuilderStatement()
+            .addStatement("builder.start(this)")
+        builder.addFunction(funBuilder.build())
+    }
+
+    private fun FunSpec.Builder.addActivityParameters(): FunSpec.Builder {
         activityClass.requestFields.forEach {
             if (it.isRequired) {
-                funBuilder.addParameter(it.name, it.kotlinTypeName)
+                addParameter(it.name, it.kotlinTypeName)
             } else {
-                funBuilder.addParameter(
+                addParameter(
                     ParameterSpec.builder(it.name, it.kotlinTypeName.copy(true))
                         .defaultValue("%L", it.defaultValue)
                         .build()
                 )
             }
         }
+        return this
+    }
 
-        funBuilder.addStatement(
-            "val intent = %T(this, %T::class.java)",
-            PrebuiltTypes.INTENT.kotlinTypeName,
-            activityClass.typeElement
-        )
-
-        funBuilder.beginControlFlow("if(!(this is %L))", PrebuiltTypes.ACTIVITY.kotlinTypeName)
-        funBuilder.addStatement(
-            "intent.addFlags(%T.FLAG_ACTIVITY_NEW_TASK)",
-            PrebuiltTypes.INTENT.kotlinTypeName
-        )
-        funBuilder.endControlFlow()
-
-        activityClass.requestFields.forEach {
-            funBuilder.addStatement(
-                "intent.putExtra(%L.%L, %L)",
-                activityClass.builderClassName,
-                it.constFieldName,
-                it.name
-            )
-        }
-
-        funBuilder.addStatement("startActivity(intent)")
-
-        builder.addFunction(funBuilder.build())
+    private fun FunSpec.Builder.addActivityBuilderStatement(): FunSpec.Builder {
+        val requiredParams = activityClass.requestFields
+            .filter { it.isRequired }
+            .joinToString(separator = ", ") { it.name }
+        // 必传参数
+        addStatement("val builder = %L.builder(${requiredParams})", activityClass.builderClassName)
+        // 可选参数
+        activityClass.requestFields
+            .filter { !it.isRequired }
+            .forEach {
+                addStatement(".${it.name}(${it.name})")
+            }
+        return this
     }
 
     private fun buildResultAPIFun(builder: FileSpec.Builder) {
-        // TODO
+        val funBuilder = FunSpec.builder("registerFor${activityName}Result")
+            .receiver(PrebuiltTypes.ACTIVITY_RESULT_CALLER.kotlinClassName)
+            .addParameter(
+                "callback",
+                LambdaTypeName.get(
+                    parameters = arrayOf(TypeVariableName("${activityClass.builderClassName}.Result")),
+                    returnType = Unit::class.asTypeName()
+                )
+            )
+            .addStatement(
+                "return %L.registerForActivityResult(this) { callback(it) }",
+                activityClass.builderClassName
+            )
+        builder.addFunction(funBuilder.build())
+    }
+
+    private fun buildResultAPILauncherExtFun(builder: FileSpec.Builder) {
+        val funBuilder = FunSpec.builder("launch")
+            .receiver(
+                PrebuiltTypes.ACTIVITY_RESULT_LAUNCHER.kotlinClassName.parameterizedBy(
+                    ClassName(activityClass.packageName, activityClass.builderClassName)
+                )
+            )
+            .addActivityParameters()
+            .addActivityBuilderStatement()
+            .addStatement("launch(builder)")
+        builder.addFunction(funBuilder.build())
     }
 
     private fun writeKotlinToFile(fileSpec: FileSpec) {

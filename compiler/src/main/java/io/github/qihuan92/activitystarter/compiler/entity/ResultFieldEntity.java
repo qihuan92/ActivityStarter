@@ -2,6 +2,8 @@ package io.github.qihuan92.activitystarter.compiler.entity;
 
 import com.squareup.javapoet.TypeName;
 
+import java.util.Objects;
+
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -31,5 +33,22 @@ public class ResultFieldEntity implements Comparable<ResultFieldEntity> {
     @Override
     public int compareTo(ResultFieldEntity o) {
         return name.compareTo(o.name);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ResultFieldEntity that = (ResultFieldEntity) o;
+        return name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }

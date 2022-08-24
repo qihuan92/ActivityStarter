@@ -71,7 +71,7 @@ public class ActivityBuilderProcessor extends AbstractProcessor {
                 .stream()
                 .filter(element -> element.getKind().isClass())
                 .forEach(element -> {
-                    if (TypeUtils.isSubType(element.asType(), "android.app.Activity")) {
+                    if (TypeUtils.isSubType(element.asType(), PrebuiltTypes.ACTIVITY.className)) {
                         activityClasses.put(element, new ActivityClass((TypeElement) element));
                     }
                 });

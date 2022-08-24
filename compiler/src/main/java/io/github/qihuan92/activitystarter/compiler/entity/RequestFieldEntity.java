@@ -4,6 +4,7 @@ import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.TypeName;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -113,5 +114,22 @@ public class RequestFieldEntity implements Comparable<RequestFieldEntity> {
         } else {
             return 1;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RequestFieldEntity that = (RequestFieldEntity) o;
+        return name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
     }
 }
