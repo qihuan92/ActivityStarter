@@ -8,7 +8,10 @@ Activity 启动器，解决使用 `startActivity()` 传递多个参数使用繁�
 
 ```groovy
 implementation "io.github.qihuan92.activitystarter:activitystarter-runtime:$latest_version"
+// java
 annotationProcessor "io.github.qihuan92.activitystarter:activitystarter-compiler:$latest_version"
+// kotlin
+kapt "io.github.qihuan92.activitystarter:activitystarter-compiler:$latest_version"
 ```
 
 ## 使用
@@ -105,25 +108,40 @@ annotationProcessor "io.github.qihuan92.activitystarter:activitystarter-compiler
 
    ```java
    // 在 onStart() 之前注册
-   private final ActivityResultLauncher<Intent> launcher = registerForActivityResult(new ColorSelectActivityBuilder.ResultContract(), result -> {
-       if (result.resultCode == RESULT_OK) {
-           ...
-       }
-   });
+    private final ActivityResultLauncher<ColorSelectActivityBuilder> launcher =
+            ColorSelectActivityBuilder.registerForActivityResult(this, result -> {
+                if (result.resultCode == RESULT_OK) {
+                    String color = result.color;
+                    binding.btnSelectColor.setBackgroundColor(Color.parseColor(color));
+                    Toast.makeText(this, "选中颜色: " + color, Toast.LENGTH_SHORT).show();
+                    currentColor = color;
+                }
+            });
    
    btnSelectColor.setOnClickListener(view -> {
-       ColorSelectActivityBuilder.builder(currentColor)
-               .start(this, launcher);
+       launcher.launch(ColorSelectActivityBuilder.builder(currentColor));
    });
    ```
 
+6. 支持生成 Kotlin 扩展函数
+   ```kotlin
+   private val launcher = registerForColorSelectActivityResult {
+       if (it.resultCode == RESULT_OK) {
+           currentColor = it.color
+           Toast.makeText(this, it.color, Toast.LENGTH_SHORT).show()
+       }
+   }
+
+   binding.btnSelectColor.setOnClickListener {
+      launcher.launch(currentColor)
+   }
+   
+   binding.btnSelectColor.setOnClickListener {
+      startColorSelectActivity(currentColor)
+   }
+   ```
    
 
 ## 许可
 
 > [Apache License 2.0](https://github.com/qihuan92/ActivityStarter/blob/master/LICENSE)
-
-## 致谢
-
-- 感谢 [@bennyhuo](https://github.com/bennyhuo) 老师，此项目为学习之后的练习项目
-
