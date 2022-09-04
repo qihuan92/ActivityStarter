@@ -1,5 +1,6 @@
 package io.github.qihuan92.activitystarter.activity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -15,6 +16,10 @@ import io.github.qihuan92.activitystarter.annotation.Extra;
 
 @Builder
 public class DetailActivity extends AppCompatActivity {
+
+    public static final String EXTRA_ID = "id";
+    public static final String EXTRA_USER_ID = "userId";
+    public static final String EXTRA_TITLE = "title";
 
     @Extra
     long id;
@@ -41,6 +46,22 @@ public class DetailActivity extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         DetailActivityBuilder.processNewIntent(this, intent);
+    }
+
+    /**
+     * Start DetailActivity.
+     *
+     * @param context context
+     * @param id      id
+     * @param userId  userID
+     * @param title   detail content
+     */
+    public static void start(Context context, long id, String userId, String title) {
+        Intent intent = new Intent(context, DetailActivity.class);
+        intent.putExtra(EXTRA_ID, id);
+        intent.putExtra(EXTRA_USER_ID, userId);
+        intent.putExtra(EXTRA_TITLE, title);
+        context.startActivity(intent);
     }
 
     private void bindView() {

@@ -14,6 +14,7 @@ import io.github.qihuan92.activitystarter.databinding.ActivityMainBinding;
 
 @Builder
 public class MainActivity extends AppCompatActivity {
+    private static final int REQUEST_CODE_SELECT_COLOR = 1;
     private ActivityMainBinding binding;
     private String currentColor;
 
@@ -59,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
 
         binding.btnSelectColor.setOnClickListener(view -> {
             launcher.launch(ColorSelectActivityBuilder.builder(currentColor));
+//            ColorSelectActivityBuilder.builder(currentColor)
+//                    .start(this, REQUEST_CODE_SELECT_COLOR);
         });
 
         binding.btnKotlinActivity.setOnClickListener(v -> {
@@ -66,4 +69,18 @@ public class MainActivity extends AppCompatActivity {
                     .start(this);
         });
     }
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        // 处理返回结果
+//        if (requestCode == REQUEST_CODE_SELECT_COLOR) {
+//            // if (data != null) {
+//            //    String color = data.getStringExtra("color");
+//            // }
+//            ColorSelectActivityBuilder.Result result = ColorSelectActivityBuilder.obtainResult(resultCode, data);
+//            String color = result.color;
+//            // TODO do something...
+//        }
+//    }
 }

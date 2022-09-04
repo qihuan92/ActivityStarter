@@ -31,6 +31,7 @@ class KotlinActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnSelectColor.setOnClickListener {
+            // startDetailActivity(123456L, "999999", "测试标题")
             launcher.launch(currentColor)
         }
     }

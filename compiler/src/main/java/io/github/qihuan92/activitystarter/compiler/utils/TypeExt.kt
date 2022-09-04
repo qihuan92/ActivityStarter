@@ -19,6 +19,7 @@ private val STRING_ARRAY = ClassName("kotlin", "Array").parameterizedBy(STRING)
 val com.squareup.javapoet.ClassName.kotlinClassName
     get() = ClassName(packageName(), simpleName())
 
+@OptIn(DelicateKotlinPoetApi::class)
 fun TypeMirror.asKotlinTypeName(): TypeName {
     return when (kind) {
         TypeKind.BOOLEAN -> BOOLEAN

@@ -53,7 +53,14 @@ public class ColorSelectActivity extends AppCompatActivity {
 
     private void initView() {
         toolbar.setNavigationOnClickListener(view -> onBackPressed());
-        colorAdapter = new ColorAdapter(colorItem -> ColorSelectActivityBuilder.finish(this, colorItem.getColor()));
+        colorAdapter = new ColorAdapter(colorItem -> {
+            // 关闭当前页面，回传返回参数
+            // Intent intent = new Intent();
+            // intent.putExtra("color", colorItem.getColor());
+            // setResult(RESULT_OK, intent);
+            // finish();
+            ColorSelectActivityBuilder.finish(this, colorItem.getColor());
+        });
         rvList.setAdapter(colorAdapter);
     }
 

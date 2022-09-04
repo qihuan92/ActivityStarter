@@ -13,7 +13,9 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/annotation" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/app-kotlin" />
             <option value="$PROJECT_DIR$/compiler" />
+            <option value="$PROJECT_DIR$/compiler-ksp" />
             <option value="$PROJECT_DIR$/runtime" />
           </set>
         </option>
