@@ -1,8 +1,4 @@
-package io.github.qihuan92.activitystarter.compiler.utils;
-
-import com.squareup.javapoet.ClassName;
-
-import io.github.qihuan92.activitystarter.compiler.entity.ClassType;
+package io.github.qihuan92.activitystarter.compiler.utils
 
 /**
  * PrebuiltTypes
@@ -10,19 +6,16 @@ import io.github.qihuan92.activitystarter.compiler.entity.ClassType;
  * @author qi
  * @since 2021/8/4
  */
-public interface PrebuiltTypes {
-    ClassType CONTEXT = new ClassType("android.content.Context");
-    ClassType INTENT = new ClassType("android.content.Intent");
-    ClassType ACTIVITY = new ClassType("android.app.Activity");
-    ClassType ACTIVITY_COMPAT = new ClassType("androidx.core.app.ActivityCompat");
-    ClassType BUNDLE = new ClassType("android.os.Bundle");
-    ClassType ACTIVITY_OPTIONS = new ClassType("androidx.core.app.ActivityOptionsCompat");
-    ClassType BUNDLE_UTILS = new ClassType("io.github.qihuan92.activitystarter.utils.BundleUtils");
-
-    ClassName ACTIVITY_RESULT_LAUNCHER = ClassName.get("androidx.activity.result", "ActivityResultLauncher");
-    ClassName ACTIVITY_RESULT_CONTRACT = ClassName.get("androidx.activity.result.contract", "ActivityResultContract");
-    ClassName ACTIVITY_RESULT_CALLER = ClassName.get("androidx.activity.result", "ActivityResultCaller");
-    ClassName ACTIVITY_RESULT_CALLBACK = ClassName.get("androidx.activity.result", "ActivityResultCallback");
-    ClassName NON_NULL = ClassName.get("androidx.annotation", "NonNull");
-    ClassName NULLABLE = ClassName.get("androidx.annotation", "Nullable");
-}
+val CONTEXT = ClassType("android.content.Context")
+val INTENT = ClassType("android.content.Intent")
+val ACTIVITY = ClassType("android.app.Activity")
+val ACTIVITY_COMPAT = ClassType("androidx.core.app.ActivityCompat")
+val BUNDLE = ClassType("android.os.Bundle")
+val ACTIVITY_OPTIONS = ClassType("androidx.core.app.ActivityOptionsCompat")
+val BUNDLE_UTILS = ClassType("io.github.qihuan92.activitystarter.utils.BundleUtils")
+val ACTIVITY_RESULT_LAUNCHER = ClassType("androidx.activity.result.ActivityResultLauncher")
+val ACTIVITY_RESULT_CONTRACT = ClassType("androidx.activity.result.contract.ActivityResultContract")
+val ACTIVITY_RESULT_CALLER = ClassType("androidx.activity.result.ActivityResultCaller")
+val ACTIVITY_RESULT_CALLBACK = ClassType("androidx.activity.result.ActivityResultCallback")
+val NON_NULL = ClassType("androidx.annotation.NonNull")
+val NULLABLE = ClassType("androidx.annotation.Nullable")

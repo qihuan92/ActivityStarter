@@ -1,10 +1,8 @@
-package io.github.qihuan92.activitystarter.compiler.entity;
+package io.github.qihuan92.activitystarter.compiler.entity
 
-import com.squareup.javapoet.TypeName;
-
-import java.util.Objects;
-
-import javax.lang.model.type.TypeMirror;
+import com.squareup.javapoet.TypeName
+import java.util.*
+import javax.lang.model.type.TypeMirror
 
 /**
  * ResultField
@@ -12,43 +10,29 @@ import javax.lang.model.type.TypeMirror;
  * @author qi
  * @since 2021/8/16
  */
-public class ResultFieldEntity implements Comparable<ResultFieldEntity> {
+data class ResultFieldEntity(
+    val name: String,
+    private val type: TypeMirror
+) : Comparable<ResultFieldEntity> {
+    val javaTypeName: TypeName
+        get() = TypeName.get(type)
 
-    private final String name;
-    private final TypeMirror type;
-
-    public ResultFieldEntity(String name, TypeMirror type) {
-        this.name = name;
-        this.type = type;
+    override fun compareTo(other: ResultFieldEntity): Int {
+        return name.compareTo(other.name)
     }
 
-    public TypeName getTypeName() {
-        return TypeName.get(type);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public int compareTo(ResultFieldEntity o) {
-        return name.compareTo(o.name);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (other == null || javaClass != other.javaClass) {
+            return false
         }
-        ResultFieldEntity that = (ResultFieldEntity) o;
-        return name.equals(that.name);
+        val that = other as ResultFieldEntity
+        return name == that.name
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
+    override fun hashCode(): Int {
+        return Objects.hash(name)
     }
 }

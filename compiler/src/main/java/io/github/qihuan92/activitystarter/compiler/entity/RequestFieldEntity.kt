@@ -1,17 +1,15 @@
-package io.github.qihuan92.activitystarter.compiler.entity;
+package io.github.qihuan92.activitystarter.compiler.entity
 
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.TypeName;
-
-import java.util.Locale;
-import java.util.Objects;
-
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-
-import io.github.qihuan92.activitystarter.annotation.Extra;
-import io.github.qihuan92.activitystarter.compiler.utils.StringUtils;
-import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
+import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.TypeName
+import io.github.qihuan92.activitystarter.annotation.Extra
+import io.github.qihuan92.activitystarter.compiler.utils.asKotlinTypeName
+import io.github.qihuan92.activitystarter.compiler.utils.camelToUnderline
+import io.github.qihuan92.activitystarter.compiler.utils.isSameType
+import io.github.qihuan92.activitystarter.compiler.utils.type
+import java.util.*
+import javax.lang.model.element.VariableElement
+import javax.lang.model.type.TypeKind
 
 /**
  * Field
@@ -19,117 +17,72 @@ import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
  * @author qi
  * @since 2021/8/3
  */
-public class RequestFieldEntity implements Comparable<RequestFieldEntity> {
-    public static final String CONST_EXTRA_PREFIX = "EXTRA_";
+class RequestFieldEntity(val variableElement: VariableElement) : Comparable<RequestFieldEntity> {
+    var name: String
+    val isRequired: Boolean
+    val description: String
+    var defaultValue: Any? = null
+        private set
+    val constFieldName: String
+        get() = CONST_EXTRA_PREFIX + name.camelToUnderline().uppercase(Locale.getDefault())
+    val javaTypeName: TypeName
+        get() = ClassName.get(variableElement.asType())
+    val kotlinTypeName
+        get() = variableElement.asType().asKotlinTypeName()
 
-    private final VariableElement variableElement;
-    private final String name;
-    private final boolean required;
-    private final String description;
-    private Object defaultValue;
+    companion object {
+        const val CONST_EXTRA_PREFIX = "EXTRA_"
+    }
 
-    public RequestFieldEntity(VariableElement variableElement) {
-        this.variableElement = variableElement;
-
-        Extra extraAnnotation = variableElement.getAnnotation(Extra.class);
-        String name = extraAnnotation.value();
-
-        this.required = extraAnnotation.required();
-        if (!name.isEmpty()) {
-            this.name = name;
+    init {
+        val extraAnnotation = variableElement.getAnnotation(Extra::class.java)
+        val name: String = extraAnnotation.value
+        isRequired = extraAnnotation.required
+        if (name.isNotEmpty()) {
+            this.name = name
         } else {
-            this.name = variableElement.getSimpleName().toString();
+            this.name = variableElement.simpleName.toString()
         }
-        this.description = extraAnnotation.description();
-        setDefaultValue(extraAnnotation, variableElement);
+        description = extraAnnotation.description
+        setDefaultValue(extraAnnotation, variableElement)
     }
 
-    private void setDefaultValue(Extra extraAnnotation, VariableElement variableElement) {
-        TypeKind kind = variableElement.asType().getKind();
-        switch (kind) {
-            case CHAR:
-                this.defaultValue = String.format("'%c'", extraAnnotation.charValue());
-                break;
-            case BYTE:
-                this.defaultValue = String.format(Locale.getDefault(), "(byte) %d", extraAnnotation.byteValue());
-                break;
-            case SHORT:
-                this.defaultValue = String.format(Locale.getDefault(), "(short) %d", extraAnnotation.shortValue());
-                break;
-            case INT:
-                this.defaultValue = extraAnnotation.intValue();
-                break;
-            case LONG:
-                this.defaultValue = String.format(Locale.getDefault(), "%dL", extraAnnotation.longValue());
-                break;
-            case FLOAT:
-                this.defaultValue = String.format(Locale.getDefault(), "%ff", extraAnnotation.floatValue());
-                break;
-            case DOUBLE:
-                this.defaultValue = extraAnnotation.doubleValue();
-                break;
-            case BOOLEAN:
-                this.defaultValue = extraAnnotation.booleanValue();
-                break;
-            default:
-                if (TypeUtils.isSameType(variableElement.asType(), String.class)) {
-                    this.defaultValue = String.format("\"%s\"", extraAnnotation.stringValue());
-                }
-                break;
+    private fun setDefaultValue(extraAnnotation: Extra, variableElement: VariableElement) {
+        when (variableElement.asType().kind) {
+            TypeKind.CHAR -> defaultValue = "'${extraAnnotation.charValue}'"
+            TypeKind.BYTE -> defaultValue = "(byte) ${extraAnnotation.byteValue}"
+            TypeKind.SHORT -> defaultValue = "(short) ${extraAnnotation.shortValue}"
+            TypeKind.INT -> defaultValue = extraAnnotation.intValue
+            TypeKind.LONG -> defaultValue = "${extraAnnotation.longValue}L"
+            TypeKind.FLOAT -> defaultValue = "${extraAnnotation.floatValue}f"
+            TypeKind.DOUBLE -> defaultValue = extraAnnotation.doubleValue
+            TypeKind.BOOLEAN -> defaultValue = extraAnnotation.booleanValue
+            else -> if (variableElement.asType().isSameType(String::class.java.type)) {
+                defaultValue = "\"${extraAnnotation.stringValue}\""
+            }
         }
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public boolean isRequired() {
-        return required;
-    }
-
-    public TypeName asTypeName() {
-        return ClassName.get(variableElement.asType());
-    }
-
-    public VariableElement getVariableElement() {
-        return variableElement;
-    }
-
-    public String getConstFieldName() {
-        return CONST_EXTRA_PREFIX + StringUtils.camelToUnderline(name).toUpperCase();
-    }
-
-    public Object getDefaultValue() {
-        return defaultValue;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public int compareTo(RequestFieldEntity other) {
-        if (!other.isRequired()) {
-            return name.compareTo(other.name);
+    override fun compareTo(other: RequestFieldEntity): Int {
+        return if (!other.isRequired) {
+            name.compareTo(other.name)
         } else {
-            return 1;
+            1
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
+        if (other == null || javaClass != other.javaClass) {
+            return false
         }
-        RequestFieldEntity that = (RequestFieldEntity) o;
-        return name.equals(that.name);
+        val that = other as RequestFieldEntity
+        return name == that.name
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(name);
+    override fun hashCode(): Int {
+        return Objects.hash(name)
     }
 }

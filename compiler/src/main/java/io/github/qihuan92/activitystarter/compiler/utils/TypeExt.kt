@@ -2,22 +2,51 @@ package io.github.qihuan92.activitystarter.compiler.utils
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import io.github.qihuan92.activitystarter.compiler.entity.ClassType
-import io.github.qihuan92.activitystarter.compiler.entity.RequestFieldEntity
+import javax.lang.model.element.ElementKind
+import javax.lang.model.element.TypeElement
 import javax.lang.model.type.ArrayType
 import javax.lang.model.type.TypeKind
 import javax.lang.model.type.TypeMirror
 
-val ClassType.kotlinTypeName
-    get() = TypeUtils.getTypeFromClassName(className).asKotlinTypeName()
-
-val RequestFieldEntity.kotlinTypeName
-    get() = variableElement.asType().asKotlinTypeName()
-
 private val STRING_ARRAY = ClassName("kotlin", "Array").parameterizedBy(STRING)
 
-val com.squareup.javapoet.ClassName.kotlinClassName
-    get() = ClassName(packageName(), simpleName())
+val String.type: TypeMirror
+    get() = AptContext.elements.getTypeElement(this).asType()
+
+val ClassType.type
+    get() = className.type
+
+val Class<*>.type: TypeMirror
+    get() = AptContext.elements.getTypeElement(canonicalName).asType()
+
+val String.javaTypeName: com.squareup.javapoet.TypeName
+    get() = com.squareup.javapoet.TypeName.get(type.apply { AptContext.types.erasure(this) })
+
+val TypeElement.packageName: String
+    get() = run {
+        var element = enclosingElement
+        while (element != null && element.kind != ElementKind.PACKAGE) {
+            element = element.enclosingElement
+        }
+        if (element == null) {
+            throw IllegalArgumentException(toString() + " does not have an enclosing element of package.")
+        }
+        return element.asType().toString()
+    }
+
+fun TypeMirror.isSubType(other: TypeMirror?): Boolean {
+    if (other == null) {
+        return false
+    }
+    return AptContext.types.isSubtype(this, other)
+}
+
+fun TypeMirror.isSameType(other: TypeMirror?): Boolean {
+    if (other == null) {
+        return false
+    }
+    return AptContext.types.isSameType(this, other)
+}
 
 @OptIn(DelicateKotlinPoetApi::class)
 fun TypeMirror.asKotlinTypeName(): TypeName {

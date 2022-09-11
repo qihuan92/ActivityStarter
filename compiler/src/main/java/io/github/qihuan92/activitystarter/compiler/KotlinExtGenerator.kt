@@ -4,10 +4,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.github.qihuan92.activitystarter.annotation.Generated
 import io.github.qihuan92.activitystarter.compiler.entity.ActivityClass
-import io.github.qihuan92.activitystarter.compiler.utils.AptContext
-import io.github.qihuan92.activitystarter.compiler.utils.PrebuiltTypes
-import io.github.qihuan92.activitystarter.compiler.utils.kotlinClassName
-import io.github.qihuan92.activitystarter.compiler.utils.kotlinTypeName
+import io.github.qihuan92.activitystarter.compiler.utils.*
 
 /**
  * Kotlin 扩展函数生成器
@@ -35,7 +32,7 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
 
     private fun buildStartFun(builder: FileSpec.Builder) {
         val funBuilder = FunSpec.builder("start${activityName}")
-            .receiver(PrebuiltTypes.CONTEXT.kotlinTypeName)
+            .receiver(CONTEXT.kotlinTypeName)
             .addActivityParameters()
             .addActivityBuilderStatement()
             .addStatement("builder.start(this)")
@@ -44,7 +41,7 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
 
     private fun FunSpec.Builder.addActivityParameters(): FunSpec.Builder {
         val kdocBuilder = CodeBlock.builder()
-        activityClass.requestFields.forEach {
+        activityClass.requestFieldEntities.forEach {
             if (it.isRequired) {
                 addParameter(it.name, it.kotlinTypeName)
             } else {
@@ -61,13 +58,13 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
     }
 
     private fun FunSpec.Builder.addActivityBuilderStatement(): FunSpec.Builder {
-        val requiredParams = activityClass.requestFields
+        val requiredParams = activityClass.requestFieldEntities
             .filter { it.isRequired }
             .joinToString(separator = ", ") { it.name }
         // 必传参数
         addStatement("val builder = %L.builder(${requiredParams})", activityClass.builderClassName)
         // 可选参数
-        activityClass.requestFields
+        activityClass.requestFieldEntities
             .filter { !it.isRequired }
             .forEach {
                 addStatement(".${it.name}(${it.name})")
@@ -77,7 +74,7 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
 
     private fun buildResultAPIFun(builder: FileSpec.Builder) {
         val funBuilder = FunSpec.builder("registerFor${activityName}Result")
-            .receiver(PrebuiltTypes.ACTIVITY_RESULT_CALLER.kotlinClassName)
+            .receiver(ACTIVITY_RESULT_CALLER.kotlinClassName)
             .addParameter(
                 "callback",
                 LambdaTypeName.get(
@@ -95,7 +92,7 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
     private fun buildResultAPILauncherExtFun(builder: FileSpec.Builder) {
         val funBuilder = FunSpec.builder("launch")
             .receiver(
-                PrebuiltTypes.ACTIVITY_RESULT_LAUNCHER.kotlinClassName.parameterizedBy(
+                ACTIVITY_RESULT_LAUNCHER.kotlinClassName.parameterizedBy(
                     ClassName(activityClass.packageName, activityClass.builderClassName)
                 )
             )
@@ -106,6 +103,6 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
     }
 
     private fun writeKotlinToFile(fileSpec: FileSpec) {
-        fileSpec.writeTo(AptContext.getInstance().filer)
+        fileSpec.writeTo(AptContext.filer)
     }
 }

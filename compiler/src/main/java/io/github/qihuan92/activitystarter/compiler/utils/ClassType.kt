@@ -1,8 +1,6 @@
-package io.github.qihuan92.activitystarter.compiler.entity;
+package io.github.qihuan92.activitystarter.compiler.utils
 
-import com.squareup.javapoet.TypeName;
-
-import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
+import com.squareup.kotlinpoet.ClassName
 
 /**
  * ClassType
@@ -10,14 +8,16 @@ import io.github.qihuan92.activitystarter.compiler.utils.TypeUtils;
  * @author qi
  * @since 2021/8/4
  */
-public class ClassType {
-    public final String className;
+class ClassType(val className: String) {
+    val javaTypeName
+        get() = className.javaTypeName
 
-    public ClassType(String className) {
-        this.className = className;
-    }
+    val kotlinTypeName
+        get() = className.type.asKotlinTypeName()
 
-    public TypeName typeName() {
-        return TypeUtils.getTypeName(className);
-    }
+    val javaClassName: com.squareup.javapoet.ClassName
+        get() = com.squareup.javapoet.ClassName.bestGuess(className)
+
+    val kotlinClassName
+        get() = ClassName.bestGuess(className)
 }
