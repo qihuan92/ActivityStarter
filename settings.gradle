@@ -1,5 +1,5 @@
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.PREFER_PROJECT)
     repositories {
         google()
         mavenCentral()
@@ -12,3 +12,4 @@ include ':annotation'
 include ':compiler'
 include ':compiler-ksp'
 include ':app-kotlin'
+include ':idea-plugin'

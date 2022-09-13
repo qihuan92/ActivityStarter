@@ -1,0 +1,20 @@
+<idea-plugin>
+    <id>io.github.qihuan92.activitystarter-idea-plugin</id>
+    <name>ActivityStarterHelper</name>
+    <vendor email="qihuan92@126.com" url="https://qihuan92.github.io/">Qi</vendor>
+
+    <description><![CDATA[
+    Support to track navigation target.
+    ]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.lineMarkerProvider language="JAVA"
+                                        implementationClass="io.github.qihuan92.activitystarter.idea.extensions.NavigationLineMarker"/>
+    </extensions>
+</idea-plugin>

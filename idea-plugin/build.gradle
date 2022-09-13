@@ -1,0 +1,33 @@
+plugins {
+    id 'java-library'
+    id 'kotlin'
+    id 'org.jetbrains.intellij' version '1.9.0'
+}
+
+group 'io.github.qihuan92'
+version '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version = '2021.2.1'
+    plugins = ['Kotlin', 'android', 'git4idea', 'java']
+}
+
+patchPluginXml {
+    changeNotes = """
+      ActivityStarter Helper.
+      """
+}
