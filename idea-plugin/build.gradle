@@ -22,7 +22,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version = '2021.2.1'
+    version = '2021.3.1'
     plugins = ['Kotlin', 'android', 'git4idea', 'java']
 }
 
