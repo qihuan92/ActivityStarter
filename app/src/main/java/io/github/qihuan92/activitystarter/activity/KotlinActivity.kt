@@ -4,13 +4,18 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import io.github.qihuan92.activitystarter.annotation.Builder
+import io.github.qihuan92.activitystarter.annotation.ResultField
 import io.github.qihuan92.activitystarter.databinding.ActivityKotlinBinding
 
 /**
  * @author qihuan
  * @date 2022/8/24
  */
-@Builder
+@Builder(
+    resultFields = [
+        ResultField(name = "testResult", type = String::class)
+    ]
+)
 class KotlinActivity : AppCompatActivity() {
 
     private val binding by lazy {
@@ -33,6 +38,10 @@ class KotlinActivity : AppCompatActivity() {
         binding.btnSelectColor.setOnClickListener {
             // startDetailActivity(123456L, "999999", "测试标题")
             launcher.launch(currentColor)
+        }
+
+        binding.toolbar.setNavigationOnClickListener {
+            finish("success")
         }
     }
 }
