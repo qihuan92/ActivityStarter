@@ -1,6 +1,7 @@
 package io.github.qihuan92.activitystarter.compiler.entity
 
 import com.squareup.javapoet.TypeName
+import io.github.qihuan92.activitystarter.compiler.utils.asKotlinTypeName
 import java.util.*
 import javax.lang.model.type.TypeMirror
 
@@ -14,8 +15,11 @@ data class ResultFieldEntity(
     val name: String,
     private val type: TypeMirror
 ) : Comparable<ResultFieldEntity> {
+
     val javaTypeName: TypeName
         get() = TypeName.get(type)
+    val kotlinTypeName: com.squareup.kotlinpoet.TypeName
+        get() = type.asKotlinTypeName()
 
     override fun compareTo(other: ResultFieldEntity): Int {
         return name.compareTo(other.name)

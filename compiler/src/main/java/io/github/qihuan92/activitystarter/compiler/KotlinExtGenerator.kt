@@ -21,10 +21,12 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
             .addAnnotation(Generated::class)
         // 生成 start 扩展函数
         buildStartFun(builder)
-        // 生成 Activity Result API 扩展函数
         if (activityClass.resultFieldEntities.isNotEmpty()) {
+            // 生成 Activity Result API 扩展函数
             buildResultAPIFun(builder)
             buildResultAPILauncherExtFun(builder)
+            // 生成 finish 扩展函数
+            buildFinishFun(builder)
         }
         // 写入文件
         writeKotlinToFile(builder.build())
@@ -36,6 +38,25 @@ class KotlinExtGenerator(private val activityClass: ActivityClass) {
             .addActivityParameters()
             .addActivityBuilderStatement()
             .addStatement("builder.start(this)")
+        builder.addFunction(funBuilder.build())
+    }
+
+    private fun buildFinishFun(builder: FileSpec.Builder) {
+        val funBuilder = FunSpec.builder("finish")
+            .receiver(activityClass.typeElement.asType().asKotlinTypeName())
+
+        activityClass.resultFieldEntities.forEach {
+            funBuilder.addParameter(it.name, it.kotlinTypeName)
+        }
+
+        val resultParams = activityClass.resultFieldEntities
+            .map { it.name }
+            .toMutableList()
+            .apply { add(0, "this") }
+            .joinToString(separator = ", ")
+
+        funBuilder.addStatement("%L.finish(${resultParams})", activityClass.builderClassName)
+
         builder.addFunction(funBuilder.build())
     }
 
