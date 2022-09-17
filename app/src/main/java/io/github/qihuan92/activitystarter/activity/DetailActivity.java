@@ -18,13 +18,13 @@ import io.github.qihuan92.activitystarter.annotation.Extra;
 public class DetailActivity extends AppCompatActivity {
 
     public static final String EXTRA_ID = "id";
-    public static final String EXTRA_USER_ID = "userId";
+    public static final String EXTRA_USER_ID = "myUserId";
     public static final String EXTRA_TITLE = "title";
 
     @Extra
     long id;
 
-    @Extra(description = "用户ID")
+    @Extra(value = EXTRA_USER_ID, description = "用户ID")
     String userId;
 
     @Extra(required = false, description = "详情内容")

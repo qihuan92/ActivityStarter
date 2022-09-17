@@ -105,7 +105,7 @@ class ActivityBuilderProcessor : AbstractProcessor() {
                     Modifier.STATIC,
                     Modifier.FINAL
                 )
-                    .initializer("\$S", requestFieldEntity.name)
+                    .initializer("\$S", requestFieldEntity.key)
                     .build()
             )
         }
@@ -219,14 +219,12 @@ class ActivityBuilderProcessor : AbstractProcessor() {
             .beginControlFlow("if(savedInstanceState != null)")
         val requestFieldEntities = activityClass.requestFieldEntities
         for (requestFieldEntity in requestFieldEntities) {
-            val name = requestFieldEntity.name
-            val typeName = requestFieldEntity.javaTypeName.box()
             injectMethodBuilder.addStatement(
-                "typedInstance.\$L = \$T.<\$T>get(savedInstanceState, \$S, \$L)",
-                name,
+                "typedInstance.\$L = \$T.<\$T>get(savedInstanceState, \$L, \$L)",
+                requestFieldEntity.name,
                 BUNDLE_UTILS.javaTypeName,
-                typeName,
-                name,
+                requestFieldEntity.javaTypeName.box(),
+                requestFieldEntity.constFieldName,
                 requestFieldEntity.defaultValue
             )
         }
@@ -253,11 +251,10 @@ class ActivityBuilderProcessor : AbstractProcessor() {
             )
         val requestFieldEntities = activityClass.requestFieldEntities
         for (requestFieldEntity in requestFieldEntities) {
-            val name = requestFieldEntity.name
             saveStateMethodBuilder.addStatement(
-                "intent.putExtra(\$S, typedInstance.\$L)",
-                name,
-                name
+                "intent.putExtra(\$L, typedInstance.\$L)",
+                requestFieldEntity.constFieldName,
+                requestFieldEntity.name
             )
         }
         saveStateMethodBuilder.addStatement("outState.putAll(intent.getExtras())").endControlFlow()

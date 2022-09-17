@@ -17,10 +17,19 @@ import javax.lang.model.type.TypeKind
  * @author qi
  * @since 2021/8/3
  */
-class RequestFieldEntity(val variableElement: VariableElement) : Comparable<RequestFieldEntity> {
-    var name: String
-    val isRequired: Boolean
-    val description: String
+class RequestFieldEntity(
+    private val variableElement: VariableElement
+) : Comparable<RequestFieldEntity> {
+
+    companion object {
+        const val CONST_EXTRA_PREFIX = "EXTRA_"
+    }
+
+    private val extraAnnotation = variableElement.getAnnotation(Extra::class.java)
+    val name = variableElement.simpleName.toString()
+    val key = extraAnnotation.value.ifEmpty { name }
+    val isRequired = extraAnnotation.required
+    val description = extraAnnotation.description
     var defaultValue: Any? = null
         private set
     val constFieldName: String
@@ -30,20 +39,7 @@ class RequestFieldEntity(val variableElement: VariableElement) : Comparable<Requ
     val kotlinTypeName
         get() = variableElement.asType().asKotlinTypeName()
 
-    companion object {
-        const val CONST_EXTRA_PREFIX = "EXTRA_"
-    }
-
     init {
-        val extraAnnotation = variableElement.getAnnotation(Extra::class.java)
-        val name: String = extraAnnotation.value
-        isRequired = extraAnnotation.required
-        if (name.isNotEmpty()) {
-            this.name = name
-        } else {
-            this.name = variableElement.simpleName.toString()
-        }
-        description = extraAnnotation.description
         setDefaultValue(extraAnnotation, variableElement)
     }
 
