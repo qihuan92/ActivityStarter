@@ -8,8 +8,8 @@ import android.app.Application;
  * @author qi
  * @since 2021/8/4
  */
-public class ActivityStarter {
-    public static void init(Application application) {
+class ActivityStarter {
+    static void init(Application application) {
         application.registerActivityLifecycleCallbacks(new StarterActivityLifecycleCallbacks());
     }
 }
