@@ -30,6 +30,12 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    buildFeatures {
+        viewBinding = true
+    }
+
+    sourceSets.debug.java.srcDirs += "build/generated/ksp/debug/kotlin"
+    sourceSets.debug.java.srcDirs += "build/generated/ksp/release/kotlin"
 }
 
 dependencies {
